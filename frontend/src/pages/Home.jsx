@@ -1,0 +1,2 @@
+import React from 'react'
+export default function Home(){return(<div className='container'><div className='card'><h1>Ballin' with Ocie — 13th Edition</h1><p>Sept 27, 2025 • 2:00 pm • P.B. Edwards Jr. Gymnasium</p></div></div>)}

@@ -1,0 +1,20 @@
+:root{--bg:#070707;--panel:#121014;--accent:#3a0ca3;--gold:#f6c85f;--muted:#bdbdbd}
+body{margin:0;font-family:Roboto,Arial;background:linear-gradient(180deg,var(--bg),#0b022b);color:#fff}
+.navbar{display:flex;gap:12px;padding:12px;background:#111;justify-content:center}
+.navbar a{color:#fff;text-decoration:none;font-weight:bold}
+.navbar a:hover{color:var(--gold)}
+.container{max-width:900px;margin:20px auto;padding:0 16px}
+.card{background:var(--panel);padding:16px;border-radius:12px;margin-bottom:12px}
+.btn{background:var(--accent);padding:8px 12px;border:none;border-radius:6px;color:#fff;text-decoration:none;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid #666}
+.muted{color:var(--muted)}
+/* Leaderboard scoreboard */
+.scoreboard{background:#000;border:3px solid var(--accent);border-radius:12px;margin-top:20px;overflow:hidden}
+.score-row{display:flex;justify-content:space-between;padding:12px 16px;font-size:1.2rem;border-bottom:1px solid #333;align-items:center}
+.score-row:last-child{border-bottom:none}
+.score-row.leader{background:linear-gradient(90deg,#3a0ca3,#5f0f40);color:var(--gold);font-weight:700}
+.rank{width:40px;text-align:center;font-weight:bold}
+.name{flex:1;padding-left:8px}
+.score{width:80px;text-align:right;font-size:1.5rem;font-weight:700;color:var(--gold)}
+.time{width:70px;text-align:right;color:var(--muted)}
+.crown{margin-left:10px;font-size:1.3rem}
