@@ -1,0 +1,42 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+export default function Leaderboard() {
+  const [players, setPlayers] = useState([]);
+  const API = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await axios.get(API + "/api/shooting");
+        setPlayers(res.data);
+      } catch (e) {
+        console.error("Error loading leaderboard", e);
+      }
+    }
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="container">
+      <h2>Shooting Contest Leaderboard</h2>
+      <div className="scoreboard">
+        {players.length === 0 ? (
+          <p className="muted">No scores yet.</p>
+        ) : (
+          players.map((p, i) => (
+            <div key={p.id} className={`score-row ${i === 0 ? "leader" : ""}`}>
+              <span className="rank">{i + 1}</span>
+              <span className="name">{p.name}</span>
+              <span className="score">{p.score}</span>
+              <span className="time">{p.time}s</span>
+              {i === 0 && <span className="crown">🏆</span>}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
