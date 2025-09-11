@@ -10,8 +10,8 @@ import Messages from './pages/Messages'
 import Admin from './pages/Admin'
 
 function NavBar(){
-  const navStyle={display:'flex',gap:'12px',padding:'12px',background:'#111',justifyContent:'center'}
-  const linkStyle={color:'#fff',textDecoration:'none',fontWeight:'bold'}
+  const navStyle={display:'flex',flexWrap:'wrap',gap:'8px',padding:'12px',background:'#111',justifyContent:'center'}
+  const linkStyle={color:'#fff',textDecoration:'none',fontWeight:'bold',padding:'6px 10px',borderRadius:'4px'}
   return(<nav style={navStyle}>
     <Link style={linkStyle} to="/">Home</Link>
     <Link style={linkStyle} to="/register">Register</Link>
