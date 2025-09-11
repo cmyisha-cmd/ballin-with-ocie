@@ -1,63 +1,89 @@
-// Express backend for Ballin' with Ocie
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
-
-const PORT = process.env.PORT || 4000;
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'admin2025';
-const SECRET = process.env.ADMIN_JWT_SECRET || 'changeme';
+import express from "express";
+import cors from "cors";
+import fs from "fs";
+import bodyParser from "body-parser";
 
 const app = express();
+const PORT = process.env.PORT || 4000;
+
 app.use(cors());
 app.use(bodyParser.json());
 
-const DATA_FILE = path.join(__dirname,'data.json');
-let db = { players:[], tickets:[], messages:[], teams:[], shooting:[] };
-if(fs.existsSync(DATA_FILE)) {
-  try { db = JSON.parse(fs.readFileSync(DATA_FILE)) } catch(e) { console.error('Error reading data.json', e); }
+const DATA_FILE = "./data.json";
+function readData() {
+  if (!fs.existsSync(DATA_FILE)) return { players: [], teams: [], tickets: [], messages: [] };
+  return JSON.parse(fs.readFileSync(DATA_FILE));
 }
-function persist(){ fs.writeFileSync(DATA_FILE, JSON.stringify(db,null,2)); }
-
-function signToken(payload){ return jwt.sign(payload, SECRET, {expiresIn:'6h'}); }
-function auth(req,res,next){ const h=req.headers.authorization; if(!h) return res.status(401).json({error:'no token'}); const token=h.split(' ')[1]; try{ req.user=jwt.verify(token,SECRET); next(); }catch(e){ res.status(401).json({error:'invalid'}); } }
-
-// Admin login
-app.post('/api/admin/login',(req,res)=>{
-  const {user, pass} = req.body;
-  if(user===ADMIN_USER && pass===ADMIN_PASS){ return res.json({token:signToken({user})}); }
-  res.status(401).json({error:'bad credentials'});
-});
+function writeData(data) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+}
 
 // Players
-app.get('/api/players',(req,res)=>res.json(db.players));
-app.post('/api/players',(req,res)=>{ const p={...req.body,id:'p'+Date.now()}; db.players.push(p); persist(); res.json(p); });
-
-// Tickets
-app.get('/api/tickets',(req,res)=>res.json(db.tickets));
-app.post('/api/tickets',(req,res)=>{ const t={...req.body,id:'t'+Date.now()}; db.tickets.push(t); persist(); res.json(t); });
-
-// Messages
-app.get('/api/messages',(req,res)=>res.json(db.messages));
-app.post('/api/messages',(req,res)=>{ const m={...req.body,id:'m'+Date.now(),replies:[]}; db.messages.push(m); persist(); res.json(m); });
-app.post('/api/messages/:id/reply',(req,res)=>{ const msg=db.messages.find(m=>m.id===req.params.id); if(!msg) return res.status(404).end(); msg.replies.push(req.body); persist(); res.json(msg); });
-
-// Shooting
-app.get('/api/shooting',(req,res)=>{ const sorted=db.shooting.slice().sort((a,b)=> b.score-a.score || a.time-b.time); res.json(sorted); });
-app.post('/api/shooting',auth,(req,res)=>{ const s=req.body; const idx=db.shooting.findIndex(x=>x.id===s.id); if(idx>=0) db.shooting[idx]=s; else db.shooting.push({...s,id:'s'+Date.now()}); persist(); res.json(s); });
-
-// Teams
-app.get('/api/teams',(req,res)=>res.json(db.teams));
-app.post('/api/teams/assign',auth,(req,res)=>{
-  const players=db.players.filter(p=>p.events && p.events.includes('Team'));
-  const count=Math.max(2,Math.min(8,req.body.teamCount||2));
-  const teams=[]; for(let i=0;i<count;i++) teams.push({name:`Team ${i+1}`,players:[]});
-  players.forEach((p,i)=>teams[i%count].players.push({id:p.id,name:p.name}));
-  db.teams=teams; persist(); res.json(teams);
+app.get("/api/players",(req,res)=>{res.json(readData().players)});
+app.post("/api/players",(req,res)=>{
+  const data=readData();
+  const player={id:Date.now().toString(),...req.body};
+  data.players.push(player); writeData(data); res.json(player);
 });
 
-app.listen(PORT,()=>console.log("Server running on "+PORT));
+// Shooting
+app.get("/api/shooting",(req,res)=>{
+  const {players}=readData();
+  const shooting=players.filter(p=>p.score!==undefined);
+  shooting.sort((a,b)=> b.score - a.score || a.time - b.time);
+  res.json(shooting);
+});
+app.post("/api/shooting/score",(req,res)=>{
+  const {playerId,score,time}=req.body;
+  const data=readData();
+  const player=data.players.find(p=>p.id===playerId);
+  if(!player) return res.status(404).json({error:"Player not found"});
+  player.score=parseInt(score); player.time=parseInt(time);
+  writeData(data); res.json(player);
+});
+
+// Teams
+app.get("/api/teams",(req,res)=>{res.json(readData().teams)});
+app.post("/api/teams/assign",(req,res)=>{
+  const {teamCount}=req.body;
+  const data=readData();
+  const players=[...data.players];
+  let teams=Array.from({length:teamCount},(_,i)=>({name:`Team ${i+1}`,players:[],score:0}));
+  players.forEach((p,idx)=>{teams[idx%teamCount].players.push(p)});
+  data.teams=teams; writeData(data); res.json(teams);
+});
+app.post("/api/teams/score",(req,res)=>{
+  const {teamName,score}=req.body;
+  const data=readData();
+  const team=data.teams.find(t=>t.name===teamName);
+  if(!team) return res.status(404).json({error:"Team not found"});
+  team.score=parseInt(score); writeData(data); res.json(team);
+});
+
+// Tickets
+app.get("/api/tickets",(req,res)=>{res.json(readData().tickets)});
+app.post("/api/tickets",(req,res)=>{
+  const data=readData();
+  const ticket={id:Date.now().toString(),...req.body};
+  data.tickets.push(ticket); writeData(data); res.json(ticket);
+});
+
+// Messages
+app.get("/api/messages",(req,res)=>{res.json(readData().messages)});
+app.post("/api/messages",(req,res)=>{
+  const data=readData();
+  const message={id:Date.now().toString(),...req.body,replies:[]};
+  data.messages.push(message); writeData(data); res.json(message);
+});
+
+// Admin Login
+app.post("/api/admin/login",(req,res)=>{
+  const {user,pass}=req.body;
+  if(user==="admin" && pass==="ocie13"){
+    res.json({token:"secret-token"});
+  } else {
+    res.status(401).json({error:"Invalid credentials"});
+  }
+});
+
+app.listen(PORT,()=>console.log(`Server running on port ${PORT}`));

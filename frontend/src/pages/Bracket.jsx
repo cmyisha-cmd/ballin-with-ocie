@@ -1,2 +1,1 @@
-import React from 'react'
-export default function Bracket(){return(<div>Bracket Page (styled)</div>)}
+import React from 'react';export default function Bracket(){return(<div>Bracket Page</div>)}

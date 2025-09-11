@@ -1,2 +1,3 @@
-# Ballin' with Ocie Server
-Run with npm install && npm start
+# Ballin' with Ocie Backend
+
+See index.js for API routes.

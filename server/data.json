@@ -1,47 +1,6 @@
 {
-  "players": [
-    {
-      "id": "p1",
-      "name": "Jordan Smith",
-      "age": 13,
-      "events": [
-        "Shooting",
-        "Team"
-      ]
-    }
-  ],
-  "tickets": [
-    {
-      "id": "t1",
-      "name": "Linda Walker",
-      "count": 2
-    }
-  ],
-  "messages": [
-    {
-      "id": "m1",
-      "name": "Chris G.",
-      "text": "Happy Birthday Ocie \ud83c\udf89\ud83c\udfc0",
-      "replies": []
-    }
-  ],
-  "shooting": [
-    {
-      "id": "s1",
-      "name": "Jordan Smith",
-      "score": 15,
-      "time": 35
-    }
-  ],
-  "teams": [
-    {
-      "name": "Team 1",
-      "players": [
-        {
-          "id": "p1",
-          "name": "Jordan Smith"
-        }
-      ]
-    }
-  ]
+  "players": [],
+  "teams": [],
+  "tickets": [],
+  "messages": []
 }
