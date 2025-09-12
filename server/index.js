@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import bodyParser from "body-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -84,6 +86,14 @@ app.post("/api/admin/login",(req,res)=>{
   } else {
     res.status(401).json({error:"Invalid credentials"});
   }
+});
+
+// Serve frontend
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get("*",(req,res)=>{
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
 app.listen(PORT,()=>console.log(`Server running on port ${PORT}`));
