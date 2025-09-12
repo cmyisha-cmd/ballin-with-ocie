@@ -6,20 +6,6 @@
       "age": 13,
       "score": 18,
       "time": 75
-    },
-    {
-      "id": "p2",
-      "name": "Alex Johnson",
-      "age": 12,
-      "score": 15,
-      "time": 85
-    },
-    {
-      "id": "p3",
-      "name": "Taylor Lee",
-      "age": 13,
-      "score": 12,
-      "time": 95
     }
   ],
   "teams": [
@@ -28,21 +14,9 @@
       "players": [
         {
           "name": "Jordan Smith"
-        },
-        {
-          "name": "Alex Johnson"
         }
       ],
       "score": 22
-    },
-    {
-      "name": "Team B",
-      "players": [
-        {
-          "name": "Taylor Lee"
-        }
-      ],
-      "score": 19
     }
   ],
   "tickets": [
@@ -50,18 +24,13 @@
       "id": "t1",
       "name": "Sam Carter",
       "count": 2
-    },
-    {
-      "id": "t2",
-      "name": "Dana Brooks",
-      "count": 3
     }
   ],
   "messages": [
     {
       "id": "m1",
       "name": "Fan1",
-      "text": "Happy 13th Ocie! \ud83c\udf89",
+      "text": "Happy Birthday! \ud83c\udf89",
       "replies": []
     }
   ]
