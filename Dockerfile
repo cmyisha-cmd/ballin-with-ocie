@@ -1,4 +1,4 @@
-# Build and run full-stack app
+# Dockerfile: builds frontend then runs backend
 FROM node:18 as build-frontend
 WORKDIR /app
 COPY frontend/package.json ./frontend/

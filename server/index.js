@@ -20,13 +20,15 @@ function writeData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// API routes as before...
+// API routes (players, shooting, teams, tickets, messages, admin login) identical to previous build
+
 app.get("/api/players",(req,res)=>{res.json(readData().players)});
 app.post("/api/players",(req,res)=>{
   const data=readData();
   const player={id:Date.now().toString(),...req.body};
   data.players.push(player); writeData(data); res.json(player);
 });
+
 app.get("/api/shooting",(req,res)=>{
   const {players}=readData();
   const shooting=players.filter(p=>p.score!==undefined);
@@ -41,6 +43,7 @@ app.post("/api/shooting/score",(req,res)=>{
   player.score=parseInt(score); player.time=parseInt(time);
   writeData(data); res.json(player);
 });
+
 app.get("/api/teams",(req,res)=>{res.json(readData().teams)});
 app.post("/api/teams/assign",(req,res)=>{
   const {teamCount}=req.body;
@@ -57,18 +60,21 @@ app.post("/api/teams/score",(req,res)=>{
   if(!team) return res.status(404).json({error:"Team not found"});
   team.score=parseInt(score); writeData(data); res.json(team);
 });
+
 app.get("/api/tickets",(req,res)=>{res.json(readData().tickets)});
 app.post("/api/tickets",(req,res)=>{
   const data=readData();
   const ticket={id:Date.now().toString(),...req.body};
   data.tickets.push(ticket); writeData(data); res.json(ticket);
 });
+
 app.get("/api/messages",(req,res)=>{res.json(readData().messages)});
 app.post("/api/messages",(req,res)=>{
   const data=readData();
   const message={id:Date.now().toString(),...req.body,replies:[]};
   data.messages.push(message); writeData(data); res.json(message);
 });
+
 app.post("/api/admin/login",(req,res)=>{
   const {user,pass}=req.body;
   if(user==="admin" && pass==="ocie13"){res.json({token:"secret-token"});}
