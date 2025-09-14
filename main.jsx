@@ -1,0 +1,1 @@
+/* main.jsx with BrowserRouter and routes */
