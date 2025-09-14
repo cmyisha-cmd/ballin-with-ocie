@@ -1,1 +1,1 @@
-<Register.jsx code from previous answer>
+<FULL CODE OF Register.jsx AS PROVIDED ABOVE>
