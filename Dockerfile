@@ -1,9 +1,16 @@
-# Dockerfile: builds frontend then runs backend
+# Dockerfile: build-time ARG support for VITE_API_BASE
 FROM node:18 as build-frontend
 WORKDIR /app
+
+ARG VITE_API_BASE
+ENV VITE_API_BASE=$VITE_API_BASE
+
 COPY frontend/package.json ./frontend/
 RUN cd frontend && npm install
 COPY frontend ./frontend
+
+# Debug: print variable value during build
+RUN echo ">>> Building frontend with VITE_API_BASE=$VITE_API_BASE"
 RUN cd frontend && npm run build
 
 FROM node:18
