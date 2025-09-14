@@ -1,1 +1,1 @@
-import React from 'react';export default function Messages(){return(<div>Messages Page</div>)}
+<Messages.jsx code from previous answer>
