@@ -11,6 +11,12 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Log every request for debugging
+app.use((req,res,next)=>{
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 const DATA_FILE = "./data.json";
 function readData() {
   if (!fs.existsSync(DATA_FILE)) return { players: [], teams: [], tickets: [], messages: [] };
@@ -20,9 +26,7 @@ function writeData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// API routes (players, shooting, teams, tickets, messages, admin login) identical to previous build
-
-app.get("/api/players",(req,res)=>{res.json(readData().players)});
+app.get("/api/players",(req,res)=>res.json(readData().players));
 app.post("/api/players",(req,res)=>{
   const data=readData();
   const player={id:Date.now().toString(),...req.body};
@@ -35,6 +39,7 @@ app.get("/api/shooting",(req,res)=>{
   shooting.sort((a,b)=> b.score - a.score || a.time - b.time);
   res.json(shooting);
 });
+
 app.post("/api/shooting/score",(req,res)=>{
   const {playerId,score,time}=req.body;
   const data=readData();
@@ -44,7 +49,7 @@ app.post("/api/shooting/score",(req,res)=>{
   writeData(data); res.json(player);
 });
 
-app.get("/api/teams",(req,res)=>{res.json(readData().teams)});
+app.get("/api/teams",(req,res)=>res.json(readData().teams));
 app.post("/api/teams/assign",(req,res)=>{
   const {teamCount}=req.body;
   const data=readData();
@@ -61,14 +66,14 @@ app.post("/api/teams/score",(req,res)=>{
   team.score=parseInt(score); writeData(data); res.json(team);
 });
 
-app.get("/api/tickets",(req,res)=>{res.json(readData().tickets)});
+app.get("/api/tickets",(req,res)=>res.json(readData().tickets));
 app.post("/api/tickets",(req,res)=>{
   const data=readData();
   const ticket={id:Date.now().toString(),...req.body};
   data.tickets.push(ticket); writeData(data); res.json(ticket);
 });
 
-app.get("/api/messages",(req,res)=>{res.json(readData().messages)});
+app.get("/api/messages",(req,res)=>res.json(readData().messages));
 app.post("/api/messages",(req,res)=>{
   const data=readData();
   const message={id:Date.now().toString(),...req.body,replies:[]};
@@ -83,6 +88,7 @@ app.post("/api/admin/login",(req,res)=>{
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 app.get("*",(req,res)=>{
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
