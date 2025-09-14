@@ -1,1 +1,1 @@
-<FULL CODE OF Register.jsx AS PROVIDED ABOVE>
+<full Register.jsx code from previous step>
