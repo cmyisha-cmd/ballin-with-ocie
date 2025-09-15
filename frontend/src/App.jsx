@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -8,16 +9,16 @@ import Admin from "./pages/Admin";
 export default function App() {
   return (
     <Router>
-      <div style={{background:"#111", padding:"1rem 2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-        <h1 style={{color:"#8A2BE2", fontSize:"24px", fontWeight:"bold"}}>Ballin’ with Ocie</h1>
-        <nav style={{display:"flex", gap:"1.5rem"}}>
-          <Link style={{color:"#fff"}} to="/">Home</Link>
-          <Link style={{color:"#fff"}} to="/register">Register</Link>
-          <Link style={{color:"#fff"}} to="/tickets">Tickets</Link>
-          <Link style={{color:"#fff"}} to="/messages">Messages</Link>
-          <Link style={{color:"#fff"}} to="/admin">Admin</Link>
+      <header style={{background:"#111", padding:"1rem", textAlign:"center"}}>
+        <h1 style={{color:"#8A2BE2", margin:0}}>Ballin' with Ocie: 13th Edition</h1>
+        <nav style={{marginTop:"0.5rem"}}>
+          <Link to="/" style={{margin:"0 10px"}}>Home</Link>
+          <Link to="/register" style={{margin:"0 10px"}}>Register</Link>
+          <Link to="/tickets" style={{margin:"0 10px"}}>Tickets</Link>
+          <Link to="/messages" style={{margin:"0 10px"}}>Messages</Link>
+          <Link to="/admin" style={{margin:"0 10px"}}>Admin</Link>
         </nav>
-      </div>
+      </header>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
@@ -25,9 +26,6 @@ export default function App() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
-      <footer style={{background:"#111", color:"#aaa", textAlign:"center", padding:"1rem"}}>
-        © 2025 Ballin’ with Ocie: 13th Edition
-      </footer>
     </Router>
   );
 }
