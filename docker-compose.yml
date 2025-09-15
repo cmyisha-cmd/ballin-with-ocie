@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 services:
   app:
     build: .
@@ -6,4 +6,3 @@ services:
       - "4000:4000"
     environment:
       - NODE_ENV=production
-    restart: unless-stopped
