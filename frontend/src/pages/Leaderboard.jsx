@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 const API = import.meta.env.VITE_API_BASE || '';
 
+function toMMSS(total){
+  const m = Math.floor((total||0)/60);
+  const s = Math.max(0, (total||0) - m*60);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
 export default function Leaderboard(){
   const [rows, setRows] = useState([]);
 
@@ -21,7 +27,7 @@ export default function Leaderboard(){
               <th className="px-4 py-3 text-left">#</th>
               <th className="px-4 py-3 text-left">Player</th>
               <th className="px-4 py-3 text-left">Score</th>
-              <th className="px-4 py-3 text-left">Time (s)</th>
+              <th className="px-4 py-3 text-left">Time</th>
             </tr>
           </thead>
           <tbody>
@@ -30,7 +36,7 @@ export default function Leaderboard(){
                 <td className="px-4 py-3">{i+1}</td>
                 <td className="px-4 py-3">{r.name}</td>
                 <td className="px-4 py-3">{r.score}</td>
-                <td className="px-4 py-3">{r.time}</td>
+                <td className="px-4 py-3">{toMMSS(r.totalSeconds)}</td>
               </tr>
             ))}
           </tbody>

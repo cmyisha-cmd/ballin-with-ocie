@@ -1,0 +1,29 @@
+[
+  {
+    "id": "reg_1",
+    "name": "Jordan Sparks",
+    "age": 16,
+    "events": {
+      "shooting": true,
+      "team": true
+    }
+  },
+  {
+    "id": "reg_2",
+    "name": "M. Carter",
+    "age": 17,
+    "events": {
+      "shooting": true,
+      "team": true
+    }
+  },
+  {
+    "id": "reg_3",
+    "name": "J. Lee",
+    "age": 16,
+    "events": {
+      "shooting": false,
+      "team": true
+    }
+  }
+]
