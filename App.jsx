@@ -1,1 +1,0 @@
-/* App.jsx with home page, leaderboard, navigation buttons */
