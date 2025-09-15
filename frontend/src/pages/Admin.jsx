@@ -1,36 +1,52 @@
+
 export default function Admin() {
-  const players = [
-    { name: "Ocie", score: 15 },
-    { name: "Jaylen", score: 12 },
-    { name: "Chris", score: 10 }
+  const shootingScores = [
+    { name: "Jordan", score: 15, time: "1:20" },
+    { name: "Taylor", score: 12, time: "1:45" },
+    { name: "Sam", score: 10, time: "1:50" },
   ];
 
   const tickets = [
-    { name: "Sarah", count: 2 },
-    { name: "Mike", count: 4 }
+    { name: "Ava", count: 2 },
+    { name: "Liam", count: 4 },
   ];
 
   return (
-    <div className="bg-black min-h-screen text-white p-8">
-      <h1 className="text-4xl font-bold text-purple-500 mb-6 text-center">Admin Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gray-900 p-4 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-3">Shooting Scores</h2>
-          {players.map((p, idx) => (
-            <p key={idx}>{p.name}: {p.score}</p>
+    <div style={{ backgroundColor: "#000", color: "#fff", minHeight: "100vh", padding: "2rem" }}>
+      <h1 style={{ fontSize: "2.5rem", color: "#8A2BE2", marginBottom: "1rem", textAlign: "center" }}>
+        Admin Dashboard
+      </h1>
+
+      <section style={{ marginBottom: "2rem" }}>
+        <h2 style={{ fontSize: "1.8rem", color: "#fff", marginBottom: "10px" }}>Shooting Contest Scores</h2>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#222" }}>
+              <th style={{ padding: "8px", textAlign: "left" }}>Player</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Score</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shootingScores.map((p, i) => (
+              <tr key={i} style={{ borderBottom: "1px solid #333" }}>
+                <td style={{ padding: "8px" }}>{p.name}</td>
+                <td style={{ padding: "8px" }}>{p.score}</td>
+                <td style={{ padding: "8px" }}>{p.time}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 style={{ fontSize: "1.8rem", color: "#fff", marginBottom: "10px" }}>Ticket Requests</h2>
+        <ul>
+          {tickets.map((t, i) => (
+            <li key={i} style={{ marginBottom: "5px" }}>{t.name} — {t.count} tickets</li>
           ))}
-        </div>
-        <div className="bg-gray-900 p-4 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-3">Teams</h2>
-          <p>Auto-assign teams coming soon...</p>
-        </div>
-        <div className="bg-gray-900 p-4 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-3">Tickets</h2>
-          {tickets.map((t, idx) => (
-            <p key={idx}>{t.name} - {t.count} tickets</p>
-          ))}
-        </div>
-      </div>
+        </ul>
+      </section>
     </div>
   );
 }

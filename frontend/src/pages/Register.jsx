@@ -1,30 +1,61 @@
+
 import { useState } from "react";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
-  const [events, setEvents] = useState([]);
-
-  const toggleEvent = (event) => {
-    setEvents((prev) =>
-      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event]
-    );
-  };
 
   return (
-    <div className="bg-black min-h-screen text-white p-8 flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-purple-500 mb-6">Player Registration</h1>
-      <form className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
-        <input className="w-full p-3 rounded bg-gray-800 text-white" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="w-full p-3 rounded bg-gray-800 text-white" placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)} />
-        <div className="space-y-2">
-          <label className="block"><input type="checkbox" onChange={() => toggleEvent("Shooting Contest")} /> Shooting Contest</label>
-          <label className="block"><input type="checkbox" onChange={() => toggleEvent("Team Tournament")} /> Team Tournament</label>
-        </div>
-        <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full">
-          Register
-        </button>
-      </form>
+    <div style={{
+      backgroundColor: "#000",
+      color: "#fff",
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "2rem"
+    }}>
+      <h1 style={{ fontSize: "2.5rem", color: "#8A2BE2", marginBottom: "1rem" }}>
+        Player Registration
+      </h1>
+      <div style={{
+        backgroundColor: "#111",
+        padding: "1.5rem",
+        borderRadius: "8px",
+        width: "100%",
+        maxWidth: "400px"
+      }}>
+        <input style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "4px",
+          border: "1px solid #555",
+          backgroundColor: "#222",
+          color: "white"
+        }} placeholder="Name" value={name} onChange={(e)=>setName(e.target.value)} />
+        <input style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "4px",
+          border: "1px solid #555",
+          backgroundColor: "#222",
+          color: "white"
+        }} placeholder="Age" value={age} onChange={(e)=>setAge(e.target.value)} />
+        <label><input type="checkbox" /> Shooting Contest</label><br/>
+        <label><input type="checkbox" /> Team Tournament</label>
+        <button style={{
+          backgroundColor: "#8A2BE2",
+          color: "#fff",
+          fontWeight: "bold",
+          marginTop: "1rem",
+          padding: "10px",
+          width: "100%",
+          borderRadius: "5px",
+          border: "none"
+        }}>Register</button>
+      </div>
     </div>
   );
 }
