@@ -1,52 +1,82 @@
+function sortByScoreTime(rows){
+  // Highest score first; if tie, least time (mm:ss) wins
+  const toSecs = t => { const [m,s] = t.split(":").map(n=>parseInt(n,10)); return m*60+s; };
+  return [...rows].sort((a,b)=> b.score - a.score || toSecs(a.time) - toSecs(b.time));
+}
 
-export default function Admin() {
-  const shootingScores = [
-    { name: "Jordan", score: 15, time: "1:20" },
-    { name: "Taylor", score: 12, time: "1:45" },
-    { name: "Sam", score: 10, time: "1:50" },
+export default function Admin(){
+  const leaderboard = sortByScoreTime([
+    { name:"Ocie Johnson", score:18, time:"0:42" },
+    { name:"Jaylen Rivers", score:18, time:"0:47" },
+    { name:"Chris Dean", score:16, time:"0:39" },
+  ]);
+
+  const teams = [
+    { name:"Team A", players:["Ocie", "Chris", "Malik", "Evan"] },
+    { name:"Team B", players:["Jaylen", "Andre", "Noah", "Miles"] },
   ];
 
-  const tickets = [
-    { name: "Ava", count: 2 },
-    { name: "Liam", count: 4 },
+  const requests = [
+    { name:"Ava Thompson", tickets:2 },
+    { name:"Liam Carter", tickets:4 },
+    { name:"Maya Lee", tickets:3 },
   ];
+  const totalTickets = requests.reduce((sum,r)=>sum+r.tickets,0);
 
   return (
-    <div style={{ backgroundColor: "#000", color: "#fff", minHeight: "100vh", padding: "2rem" }}>
-      <h1 style={{ fontSize: "2.5rem", color: "#8A2BE2", marginBottom: "1rem", textAlign: "center" }}>
-        Admin Dashboard
-      </h1>
+    <div style={{padding:"24px"}}>
+      <h2 style={{color:"#8A2BE2", fontSize:"34px", fontWeight:900, marginBottom:12}}>Admin Dashboard</h2>
 
-      <section style={{ marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.8rem", color: "#fff", marginBottom: "10px" }}>Shooting Contest Scores</h2>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <section style={cardSec}>
+        <h3 style={cardTitle}>Shooting Contest Leaderboard</h3>
+        <table style={{width:"100%", borderCollapse:"collapse"}}>
           <thead>
-            <tr style={{ backgroundColor: "#222" }}>
-              <th style={{ padding: "8px", textAlign: "left" }}>Player</th>
-              <th style={{ padding: "8px", textAlign: "left" }}>Score</th>
-              <th style={{ padding: "8px", textAlign: "left" }}>Time</th>
+            <tr style={{background:"#222"}}>
+              <th style={th}>Player</th><th style={th}>Score</th><th style={th}>Time</th>
             </tr>
           </thead>
           <tbody>
-            {shootingScores.map((p, i) => (
-              <tr key={i} style={{ borderBottom: "1px solid #333" }}>
-                <td style={{ padding: "8px" }}>{p.name}</td>
-                <td style={{ padding: "8px" }}>{p.score}</td>
-                <td style={{ padding: "8px" }}>{p.time}</td>
+            {leaderboard.map((r,i)=>(
+              <tr key={i} style={{borderBottom:"1px solid #2a2a2a"}}>
+                <td style={td}>{r.name}</td><td style={td}>{r.score}</td><td style={td}>{r.time}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        <div style={{marginTop:10, display:"flex", gap:8, flexWrap:"wrap"}}>
+          <button style={buttonGhost}>+ Add Score</button>
+          <button style={buttonGhost}>Auto-Assign Teams</button>
+          <button style={buttonGhost}>Update Game Score</button>
+        </div>
       </section>
 
-      <section>
-        <h2 style={{ fontSize: "1.8rem", color: "#fff", marginBottom: "10px" }}>Ticket Requests</h2>
-        <ul>
-          {tickets.map((t, i) => (
-            <li key={i} style={{ marginBottom: "5px" }}>{t.name} — {t.count} tickets</li>
+      <section style={cardSec}>
+        <h3 style={cardTitle}>Teams</h3>
+        <div style={{display:"grid", gap:12, gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))"}}>
+          {teams.map((t,i)=>(
+            <div key={i} style={{background:"#151515", border:"1px solid #2a2a2a", borderRadius:10, padding:"10px 12px"}}>
+              <strong style={{display:"block", color:"#bb86fc"}}>{t.name}</strong>
+              <ul style={{margin:"8px 0 0 18px"}}>
+                {t.players.map((p,idx)=>(<li key={idx} style={{marginBottom:4}}>{p}</li>))}
+              </ul>
+            </div>
           ))}
+        </div>
+      </section>
+
+      <section style={cardSec}>
+        <h3 style={cardTitle}>Ticket Requests</h3>
+        <div>Total Non‑Player Tickets: <strong>{totalTickets}</strong></div>
+        <ul style={{marginTop:8}}>
+          {requests.map((r,i)=>(<li key={i} style={{marginBottom:4}}>{r.name} — {r.tickets}</li>))}
         </ul>
       </section>
     </div>
   );
 }
+
+const cardSec = { background:"#111", border:"1px solid #2a2a2a", borderRadius:12, padding:"14px 16px", marginBottom:16 };
+const cardTitle = { margin:"0 0 10px", fontSize:"22px", color:"#e8e8e8" };
+const th = { textAlign:"left", padding:"8px 10px" };
+const td = { padding:"8px 10px" };
+const buttonGhost = { background:"#1f1f1f", color:"#bb86fc", border:"1px solid #3a3a3a", borderRadius:8, padding:"8px 10px", cursor:"pointer" };

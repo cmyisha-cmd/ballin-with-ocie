@@ -1,35 +1,22 @@
-
 export default function Home() {
   return (
     <div style={{
-      backgroundColor: "#000",
-      color: "#fff",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      padding: "2rem",
+      minHeight:"calc(100vh - 180px)",
+      display:"flex",
+      flexDirection:"column",
+      alignItems:"center",
+      justifyContent:"center",
+      textAlign:"center",
+      padding:"2rem",
+      background:"#000",
+      color:"#fff"
     }}>
-      <h1 style={{
-        fontSize: "3rem",
-        fontWeight: "900",
-        color: "#8A2BE2",
-        textShadow: "2px 2px 8px rgba(0,0,0,0.8)",
-        marginBottom: "1rem",
-      }}>
+      <h2 style={{fontSize:"48px", lineHeight:"1.1", margin:"0 0 14px", fontWeight:900, color:"#8A2BE2", textShadow:"0 6px 18px rgba(138,43,226,.35)"}}>
         Welcome to Ballin’ with Ocie!
-      </h1>
-      <p style={{
-        fontSize: "1.5rem",
-        maxWidth: "700px",
-        lineHeight: "2rem",
-        color: "#E5E5E5"
-      }}>
-        Join us for the 13th Edition Basketball Tournament! Register for the
-        Shooting Contest or Team Tournament, get tickets, and cheer for your
-        favorite players.
+      </h2>
+      <p style={{fontSize:"20px", color:"#E5E5E5", maxWidth:760}}>
+        Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message.
+        Track live scores and brackets during the event.
       </p>
     </div>
   );
