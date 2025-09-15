@@ -1,44 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 export default function Messages() {
-  const [messages, setMessages] = useState([]);
-  const [name, setName] = useState('');
-  const [text, setText] = useState('');
-
-  async function fetchMessages() {
-    const res = await fetch('/api/messages');
-    const data = await res.json();
-    setMessages(data);
+  const [form, setForm] = useState({ name:'', message:'' })
+  const [items, setItems] = useState([])
+  const load = async () => {
+    const res = await fetch('/api/messages')
+    setItems(await res.json())
   }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
+  const submit = async (e) => {
+    e.preventDefault()
     await fetch('/api/messages', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name, text })
-    });
-    setText('');
-    fetchMessages();
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: form.name, message: form.message })
+    })
+    setForm({ name:'', message:'' })
+    await load()
   }
-
-  useEffect(() => { fetchMessages(); }, []);
-
+  useEffect(()=>{ load() }, [])
   return (
-    <div style={{ padding:"2rem", color:"#fff" }}>
-      <h2>Leave a Birthday Wish</h2>
-      <form onSubmit={handleSubmit}>
-        <input placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required />
-        <textarea placeholder="Your Message" value={text} onChange={e => setText(e.target.value)} required />
-        <button type="submit">Send</button>
+    <section className="max-w-3xl mx-auto px-4 py-10">
+      <h2 className="text-3xl font-bold text-primary mb-4">Send a Birthday Wish</h2>
+      <form onSubmit={submit} className="card space-y-4">
+        <input className="w-full p-3 rounded bg-neutral-900 border border-neutral-800" placeholder="Your Name"
+               value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+        <textarea className="w-full p-3 rounded bg-neutral-900 border border-neutral-800" placeholder="Your Message"
+               value={form.message} onChange={e=>setForm({...form, message:e.target.value})} required />
+        <button className="btn w-full" type="submit">Post Message</button>
       </form>
-      <div style={{marginTop:"1rem"}}>
-        {messages.map((m, i) => (
-          <div key={i} style={{background:"#222", padding:"0.5rem", marginBottom:"0.5rem"}}>
-            <strong>{m.name}:</strong> {m.text}
+      <div className="mt-6 space-y-3">
+        {items.map(m => (
+          <div key={m.id} className="card">
+            <strong className="text-primary">{m.name}</strong>
+            <div className="text-neutral-200">{m.message}</div>
           </div>
         ))}
       </div>
-    </div>
-  );
+    </section>
+  )
 }

@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+a { @apply text-white hover:text-primary; }
+.btn {
+  @apply bg-primary text-white font-semibold px-4 py-2 rounded hover:bg-purple-700 transition;
+}
+.card {
+  @apply bg-neutral-900/70 border border-neutral-800 rounded-xl p-4 shadow-md;
+}

@@ -1,4 +1,4 @@
-# --- Stage 1: Build frontend ---
+# --- Stage 1: Build Frontend ---
 FROM node:18-alpine AS build-frontend
 WORKDIR /app
 COPY frontend/package*.json ./frontend/
@@ -6,14 +6,14 @@ RUN cd frontend && npm install
 COPY frontend ./frontend
 RUN cd frontend && npm run build
 
-# --- Stage 2: Build backend ---
+# --- Stage 2: Install Backend ---
 FROM node:18-alpine AS build-backend
 WORKDIR /app
 COPY server/package*.json ./server/
 RUN cd server && npm install
 COPY server ./server
 
-# --- Stage 3: Final container ---
+# --- Stage 3: Final Image ---
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build-frontend /app/frontend/dist ./frontend/dist

@@ -1,35 +1,42 @@
-import { useState } from "react";
+import { useState } from 'react'
 
 export default function Register() {
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [event, setEvent] = useState([]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`Registered: ${name}, Age: ${age}, Events: ${event.join(", ")}`);
-  };
-
-  const toggleEvent = (ev) => {
-    setEvent(prev => prev.includes(ev) ? prev.filter(e => e !== ev) : [...prev, ev]);
-  };
-
+  const [form, setForm] = useState({ name:'', age:'', events:[] })
+  const toggleEvent = (eName) => {
+    setForm(f => ({
+      ...f,
+      events: f.events.includes(eName) ? f.events.filter(x=>x!==eName) : [...f.events, eName]
+    }))
+  }
+  const submit = async (e) => {
+    e.preventDefault()
+    // Register for each selected event as individual entries
+    for (const ev of form.events) {
+      await fetch('/api/players', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name: form.name, age: Number(form.age||0), event: ev })
+      })
+    }
+    alert('Registration submitted!')
+    setForm({ name:'', age:'', events:[] })
+  }
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
-      <h2 className="text-4xl font-bold text-purple-500 mb-4">Player Registration</h2>
-      <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded-xl shadow-lg w-full max-w-md space-y-4">
-        <input type="text" placeholder="Player Name" value={name} onChange={(e) => setName(e.target.value)}
-          className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"/>
-        <input type="number" placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)}
-          className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"/>
-        <div className="flex flex-col space-y-2 text-left">
-          <label><input type="checkbox" onChange={() => toggleEvent("Shooting Contest")} /> Shooting Contest</label>
-          <label><input type="checkbox" onChange={() => toggleEvent("Team Tournament")} /> Team Tournament</label>
+    <section className="max-w-3xl mx-auto px-4 py-10">
+      <h2 className="text-3xl font-bold text-primary mb-4">Register as a Player</h2>
+      <form onSubmit={submit} className="card space-y-4">
+        <input className="w-full p-3 rounded bg-neutral-900 border border-neutral-800" placeholder="Full Name"
+               value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+        <input className="w-full p-3 rounded bg-neutral-900 border border-neutral-800" placeholder="Age" type="number"
+               value={form.age} onChange={e=>setForm({...form, age:e.target.value})} required />
+        <div className="grid sm:grid-cols-2 gap-3">
+          <label className="flex items-center gap-2"><input type="checkbox" checked={form.events.includes('Shooting Contest')}
+                  onChange={()=>toggleEvent('Shooting Contest')} /> Shooting Contest</label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={form.events.includes('Team Tournament')}
+                  onChange={()=>toggleEvent('Team Tournament')} /> Team Tournament</label>
         </div>
-        <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full">
-          Register
-        </button>
+        <button className="btn w-full" type="submit">Submit Registration</button>
       </form>
-    </div>
-  );
+    </section>
+  )
 }
