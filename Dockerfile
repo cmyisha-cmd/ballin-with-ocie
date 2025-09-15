@@ -1,23 +1,21 @@
-# --- Stage 1: Build Frontend ---
-FROM node:18-alpine AS build-frontend
+# Multi-stage build
+FROM node:18-alpine as build-frontend
 WORKDIR /app
 COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm install
 COPY frontend ./frontend
 RUN cd frontend && npm run build
 
-# --- Stage 2: Install Backend ---
-FROM node:18-alpine AS build-backend
+FROM node:18-alpine as build-backend
 WORKDIR /app
 COPY server/package*.json ./server/
 RUN cd server && npm install
 COPY server ./server
 
-# --- Stage 3: Final Image ---
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build-frontend /app/frontend/dist ./frontend/dist
 COPY --from=build-backend /app/server ./server
 WORKDIR /app/server
 EXPOSE 4000
-CMD ["node", "index.js"]
+CMD ["npm","start"]
