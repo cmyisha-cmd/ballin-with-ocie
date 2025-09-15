@@ -2,50 +2,68 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "MISSING";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
 
 export default function App() {
   const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [apiStatus, setApiStatus] = useState("checking");
 
-  useEffect(() => {
-    if (API_BASE === "MISSING") {
-      setApiStatus("missing");
-      return;
+  const load = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/players`);
+      setPlayers(res.data || []);
+      setApiStatus("ok");
+    } catch (e) {
+      setApiStatus("error");
     }
-    axios.get(`${API_BASE}/api/players`)
-      .then(res => { setPlayers(res.data); setApiStatus("ok"); })
-      .catch(() => setApiStatus("error"));
+  };
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 5000); // 🔁 auto-refresh every 5s
+    return () => clearInterval(t);
   }, []);
+
+  const sorted = [...players].sort((a, b) => {
+    const s = (b.score ?? 0) - (a.score ?? 0);
+    if (s !== 0) return s;
+    return (a.time ?? Infinity) - (b.time ?? Infinity);
+  });
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col">
-      {apiStatus === "missing" && <div className="bg-red-600 text-center py-2 text-sm font-bold">❌ VITE_API_BASE is not set!</div>}
-      {apiStatus === "error" && <div className="bg-orange-600 text-center py-2 text-sm font-bold">⚠️ Cannot reach API at {API_BASE}</div>}
-      {apiStatus === "ok" && <div className="bg-green-700 text-center py-2 text-sm font-bold">✅ API Connected</div>}
+      {apiStatus === "error" && (
+        <div className="bg-red-700 text-center py-2 text-sm font-bold">
+          ⚠️ Cannot reach API at {API_BASE}
+        </div>
+      )}
 
-      <header className="text-center py-8 bg-gradient-to-r from-purple-900 to-purple-600 shadow-lg">
-        <h1 className="text-4xl font-extrabold tracking-wide uppercase">Ballin’ with Ocie: 13th Edition</h1>
+      <header className="text-center py-8 hdr shadow-lg">
+        <h1 className="text-4xl font-extrabold tracking-wide uppercase">
+          Ballin’ with Ocie: 13th Edition
+        </h1>
         <p className="text-lg mt-2">September 27, 2025 • 2:00 PM</p>
-        <p className="text-sm opacity-80">P.B. Edwards Jr. Gymnasium • Port Wentworth, GA</p>
+        <p className="text-sm opacity-90">
+          P.B. Edwards Jr. Gymnasium • 101 Turnberry St, Port Wentworth, GA 31407
+        </p>
       </header>
 
-      <div className="grid gap-4 grid-cols-2 max-w-3xl mx-auto mt-6">
-        <button onClick={() => navigate("/register")} className="bg-purple-700 hover:bg-purple-600 py-3 rounded-2xl text-lg font-semibold shadow-md">Register as a Player</button>
-        <button onClick={() => navigate("/tickets")} className="bg-purple-700 hover:bg-purple-600 py-3 rounded-2xl text-lg font-semibold shadow-md">Get Tickets</button>
-        <button onClick={() => navigate("/messages")} className="bg-purple-700 hover:bg-purple-600 py-3 rounded-2xl text-lg font-semibold shadow-md">Leave a Birthday Message</button>
-        <button onClick={() => navigate("/admin")} className="bg-purple-700 hover:bg-purple-600 py-3 rounded-2xl text-lg font-semibold shadow-md">Admin Login</button>
+      <div className="grid gap-4 grid-cols-2 max-w-3xl mx-auto mt-6 px-4 w-full">
+        <button onClick={() => navigate("/register")} className="btn">Register as a Player</button>
+        <button onClick={() => navigate("/tickets")} className="btn">Get Tickets</button>
+        <button onClick={() => navigate("/messages")} className="btn">Birthday Messages</button>
+        <button onClick={() => navigate("/admin")} className="btn">Admin Login</button>
       </div>
 
-      <section className="max-w-xl mx-auto mt-10 bg-gray-900 rounded-2xl shadow-xl p-6">
+      <section className="card max-w-xl mx-auto mt-10 w-[92%]">
         <h2 className="text-2xl font-bold mb-4 text-purple-400">Shooting Contest Leaderboard</h2>
-        {players.length === 0 ? (
+        {sorted.length === 0 ? (
           <p className="text-gray-400 text-sm">No players yet</p>
         ) : (
           <ul>
-            {players.sort((a,b)=>b.score - a.score || a.time - b.time).map(p => (
-              <li key={p.id} className="flex justify-between py-2 border-b border-gray-700 last:border-0">
+            {sorted.map((p) => (
+              <li key={p.id ?? p.name} className="flex justify-between py-2 border-b border-gray-800 last:border-0">
                 <span>{p.name}</span>
                 <span className="font-bold">{p.score ?? 0} pts ({p.time ?? 0}s)</span>
               </li>
@@ -54,7 +72,9 @@ export default function App() {
         )}
       </section>
 
-      <footer className="mt-auto py-4 text-center text-xs text-gray-500">© 2025 Ballin’ with Ocie — Built with ❤️</footer>
+      <footer className="mt-auto py-6 text-center text-xs text-gray-500">
+        © 2025 Ballin’ with Ocie — Built with ❤️
+      </footer>
     </div>
   );
 }
