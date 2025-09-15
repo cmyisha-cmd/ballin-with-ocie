@@ -1,0 +1,1 @@
+export default function Register() { return <div style={{padding:"2rem", color:"#fff", background:"#000"}}>Player Registration Page</div>; }

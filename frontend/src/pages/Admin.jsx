@@ -1,0 +1,1 @@
+export default function Admin() { return <div style={{padding:"2rem", color:"#fff", background:"#000"}}>Admin Dashboard</div>; }

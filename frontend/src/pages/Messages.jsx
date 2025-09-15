@@ -1,0 +1,1 @@
+export default function Messages() { return <div style={{padding:"2rem", color:"#fff", background:"#000"}}>Messages Page</div>; }

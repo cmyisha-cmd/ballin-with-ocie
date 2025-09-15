@@ -1,0 +1,1 @@
+export default function Tickets() { return <div style={{padding:"2rem", color:"#fff", background:"#000"}}>Tickets Page</div>; }
