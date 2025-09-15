@@ -1,42 +1,66 @@
 {
   "registrations": [
     {
+      "id": "reg_1",
       "name": "Jordan Sparks",
       "age": 16,
       "events": {
         "shooting": true,
         "team": true
       }
+    },
+    {
+      "id": "reg_2",
+      "name": "M. Carter",
+      "age": 17,
+      "events": {
+        "shooting": true,
+        "team": true
+      }
+    },
+    {
+      "id": "reg_3",
+      "name": "J. Lee",
+      "age": 16,
+      "events": {
+        "shooting": false,
+        "team": true
+      }
     }
   ],
   "tickets": [
     {
-      "name": "A. Spectator",
-      "count": 2
+      "id": "tix_1",
+      "name": "Parent A",
+      "quantity": 2
+    },
+    {
+      "id": "tix_2",
+      "name": "Parent B",
+      "quantity": 1
     }
   ],
   "messages": [
     {
+      "id": "msg_1",
       "name": "Coach",
       "text": "Happy Birthday and good luck!",
       "ts": 1690000000000
     }
   ],
-  "leaderboard": [
+  "shootingPlayers": [
     {
-      "name": "Ocie",
-      "score": 23,
-      "time": 38
-    },
-    {
-      "name": "M. Carter",
-      "score": 20,
-      "time": 41
-    },
-    {
-      "name": "J. Lee",
+      "id": "sp_1",
+      "name": "Jordan Sparks",
       "score": 18,
       "time": 43
+    },
+    {
+      "id": "sp_2",
+      "name": "M. Carter",
+      "score": 15,
+      "time": 49
     }
-  ]
+  ],
+  "teams": {}
 }

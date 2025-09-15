@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
+const API = import.meta.env.VITE_API_BASE || '';
 
 export default function Messages(){
   const [items, setItems] = useState([]);

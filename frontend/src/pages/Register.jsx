@@ -1,5 +1,5 @@
 import { useState } from 'react';
-const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
+const API = import.meta.env.VITE_API_BASE || '';
 
 export default function Register(){
   const [form, setForm] = useState({ name:'', age:'', events:{shooting:false, team:false} });

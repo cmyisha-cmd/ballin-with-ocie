@@ -13,7 +13,7 @@ COPY server/package*.json ./server/
 RUN cd server && npm install
 COPY server ./server
 
-# Final image
+# Final image (serves API + built frontend)
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build-frontend /app/frontend/dist ./frontend/dist

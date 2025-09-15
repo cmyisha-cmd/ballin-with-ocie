@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
+const API = import.meta.env.VITE_API_BASE || '';
 
 export default function Leaderboard(){
   const [rows, setRows] = useState([]);
@@ -26,7 +26,7 @@ export default function Leaderboard(){
           </thead>
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={i} className="odd:bg-black/40 even:bg-black/20">
+              <tr key={r.id||i} className="odd:bg-black/40 even:bg-black/20">
                 <td className="px-4 py-3">{i+1}</td>
                 <td className="px-4 py-3">{r.name}</td>
                 <td className="px-4 py-3">{r.score}</td>
