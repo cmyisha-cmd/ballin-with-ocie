@@ -1,1 +1,0 @@
-/* Tickets.jsx code from earlier */
