@@ -1,30 +1,35 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function Register() {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [event, setEvent] = useState('Shooting Contest');
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [event, setEvent] = useState([]);
 
-  async function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await fetch('/api/players', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name, age, event })
-    });
-    alert("Registration submitted!");
-  }
+    alert(`Registered: ${name}, Age: ${age}, Events: ${event.join(", ")}`);
+  };
+
+  const toggleEvent = (ev) => {
+    setEvent(prev => prev.includes(ev) ? prev.filter(e => e !== ev) : [...prev, ev]);
+  };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding:"2rem", color:"#fff" }}>
-      <h2>Register</h2>
-      <input placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
-      <input placeholder="Age" value={age} onChange={e => setAge(e.target.value)} />
-      <select value={event} onChange={e => setEvent(e.target.value)}>
-        <option>Shooting Contest</option>
-        <option>Team Tournament</option>
-      </select>
-      <button type="submit">Submit</button>
-    </form>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+      <h2 className="text-4xl font-bold text-purple-500 mb-4">Player Registration</h2>
+      <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded-xl shadow-lg w-full max-w-md space-y-4">
+        <input type="text" placeholder="Player Name" value={name} onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"/>
+        <input type="number" placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"/>
+        <div className="flex flex-col space-y-2 text-left">
+          <label><input type="checkbox" onChange={() => toggleEvent("Shooting Contest")} /> Shooting Contest</label>
+          <label><input type="checkbox" onChange={() => toggleEvent("Team Tournament")} /> Team Tournament</label>
+        </div>
+        <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full">
+          Register
+        </button>
+      </form>
+    </div>
   );
 }

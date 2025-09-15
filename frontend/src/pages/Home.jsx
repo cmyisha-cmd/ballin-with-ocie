@@ -1,21 +1,12 @@
 export default function Home() {
   return (
-    <div style={{
-      minHeight:"calc(100vh - 180px)",
-      display:"flex",
-      flexDirection:"column",
-      alignItems:"center",
-      justifyContent:"center",
-      textAlign:"center",
-      padding:"2rem",
-      background:"#000",
-      color:"#fff"
-    }}>
-      <h2 style={{fontSize:"48px", fontWeight:900, color:"#8A2BE2"}}>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-6">
+      <h2 className="text-5xl font-extrabold text-purple-600 drop-shadow-lg mb-4">
         Welcome to Ballin’ with Ocie!
       </h2>
-      <p style={{fontSize:"20px", color:"#E5E5E5"}}>
-        Register for events, get tickets, and leave a birthday message!
+      <p className="text-lg text-gray-300 max-w-xl">
+        Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message.
+        Track live scores and brackets during the event.
       </p>
     </div>
   );
