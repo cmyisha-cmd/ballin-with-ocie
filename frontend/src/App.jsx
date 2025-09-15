@@ -1,23 +1,20 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import Tickets from "./pages/Tickets";
-import Messages from "./pages/Messages";
-import Admin from "./pages/Admin";
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import Home from './pages/Home.jsx';
+import Register from './pages/Register.jsx';
+import Tickets from './pages/Tickets.jsx';
+import Messages from './pages/Messages.jsx';
+import Admin from './pages/Admin.jsx';
 
 export default function App() {
   return (
-    <Router>
-      <header style={{background:"#111", padding:"1rem", textAlign:"center"}}>
-        <h1 style={{color:"#8A2BE2", margin:0}}>Ballin' with Ocie: 13th Edition</h1>
-        <nav style={{marginTop:"0.5rem"}}>
-          <Link to="/" style={{margin:"0 10px"}}>Home</Link>
-          <Link to="/register" style={{margin:"0 10px"}}>Register</Link>
-          <Link to="/tickets" style={{margin:"0 10px"}}>Tickets</Link>
-          <Link to="/messages" style={{margin:"0 10px"}}>Messages</Link>
-          <Link to="/admin" style={{margin:"0 10px"}}>Admin</Link>
-        </nav>
+    <BrowserRouter>
+      <header style={{background:'#111', padding:'1rem', display:'flex', justifyContent:'space-around'}}>
+        <Link to="/" style={{color:'#8A2BE2'}}>Home</Link>
+        <Link to="/register" style={{color:'#8A2BE2'}}>Register</Link>
+        <Link to="/tickets" style={{color:'#8A2BE2'}}>Tickets</Link>
+        <Link to="/messages" style={{color:'#8A2BE2'}}>Messages</Link>
+        <Link to="/admin" style={{color:'#8A2BE2'}}>Admin</Link>
       </header>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -26,6 +23,6 @@ export default function App() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }

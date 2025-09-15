@@ -1,26 +1,26 @@
-import { useState } from "react";
+import React, { useState } from 'react';
 export default function Tickets() {
-  const [name, setName] = useState("");
-  const [count, setCount] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [name, setName] = useState('');
+  const [count, setCount] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setTickets([...tickets, { name, count }]);
+    setName('');
+    setCount('');
   };
 
   return (
-    <div style={{padding:"2rem"}}>
-      <h2 style={{color:"#8A2BE2"}}>Get Tickets</h2>
-      {!submitted ? (
-        <form onSubmit={handleSubmit}>
-          <input placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required /><br/><br/>
-          <input type="number" placeholder="Number of Tickets" value={count} onChange={e => setCount(e.target.value)} required /><br/><br/>
-          <button type="submit">Request</button>
-        </form>
-      ) : (
-        <p>🎟 Thank you {name}! Your {count} tickets will be available at the Box Office.</p>
-      )}
+    <div style={{padding:'2rem'}}>
+      <h2>Get Tickets</h2>
+      <form onSubmit={handleSubmit}>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required />
+        <input value={count} onChange={(e) => setCount(e.target.value)} placeholder="Number of Tickets" required />
+        <button type="submit">Request</button>
+      </form>
+      <h3>Requested Tickets</h3>
+      <ul>{tickets.map((t, i) => <li key={i}>{t.name} - {t.count} tickets</li>)}</ul>
     </div>
   );
 }

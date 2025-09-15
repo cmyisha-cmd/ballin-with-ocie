@@ -1,14 +1,11 @@
-import { useState } from "react";
+import React from 'react';
 export default function Admin() {
-  const [scores, setScores] = useState([{player:"John", score:15},{player:"Mike", score:10}]);
-
   return (
-    <div style={{padding:"2rem"}}>
-      <h2 style={{color:"#8A2BE2"}}>Admin Dashboard</h2>
-      <h3>Shooting Contest Scores</h3>
-      <ul>
-        {scores.map((s,i)=><li key={i}>{s.player}: {s.score}</li>)}
-      </ul>
+    <div style={{padding:'2rem'}}>
+      <h2>Admin Dashboard (Sample)</h2>
+      <p>View player registrations, tickets, and scores here.</p>
+      <p><strong>Shooting Contest Sample:</strong> Player1 - 10pts / 30s</p>
+      <p><strong>Team Bracket:</strong> Team A vs Team B</p>
     </div>
   );
 }
