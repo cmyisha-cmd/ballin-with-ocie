@@ -5,7 +5,7 @@ export default function Navbar(){
     <Link to={to} className={`px-3 py-2 rounded-md text-sm font-semibold transition ${pathname===to?'bg-primary text-white':'text-purple-300 hover:text-white hover:bg-primary/20'}`}>{label}</Link>
   );
   return (
-    <header className="bg-ink/90 border-b border-primary/30 backdrop-blur">
+    <header className="bg-ink/90 border-b border-primary/30 backdrop-blur sticky top-0 z-20">
       <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
         <div className="text-xl font-extrabold tracking-wide">Ballin’ with Ocie</div>
         <nav className="flex gap-2">

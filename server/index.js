@@ -18,14 +18,14 @@ const write = (name, data)=> fs.writeFileSync(file(name), JSON.stringify(data, n
 const ensure = (name, fallback)=> { if(!fs.existsSync(file(name))) write(name, fallback); return read(name); };
 const uid = (pfx) => pfx + Math.random().toString(36).slice(2,9);
 
-// seed files if missing
+// seed files
 ensure('players.json', []);
 ensure('tickets.json', []);
 ensure('contest.json', []);
 ensure('teams.json', {});
 ensure('messages.json', []);
 
-// registration
+// ---- Registration ----
 app.post('/api/register', (req,res)=>{
   const players = read('players.json');
   const p = { id: uid('reg_'), ...req.body };
@@ -42,7 +42,7 @@ app.post('/api/register', (req,res)=>{
   res.json({ ok:true, id: p.id });
 });
 
-// tickets
+// ---- Tickets ----
 app.post('/api/tickets', (req,res)=>{
   const tickets = read('tickets.json');
   const t = { id: uid('tix_'), name: req.body.name, quantity: Number(req.body.quantity)||1 };
@@ -51,20 +51,54 @@ app.post('/api/tickets', (req,res)=>{
   res.json({ ok:true, message:'Thank you! Your tickets will be available at the Box Office.' });
 });
 
-// messages
+// ---- Messages (with replies + reactions) ----
 app.get('/api/messages', (req,res)=> res.json(read('messages.json')) );
+
 app.post('/api/messages', (req,res)=>{
-  const msgs = read('messages.json'); msgs.push({ id: uid('msg_'), ...req.body }); write('messages.json', msgs); res.json({ok:true});
+  const { parentId, name, text } = req.body;
+  const messages = read('messages.json');
+  if (parentId) {
+    const m = messages.find(x=>x.id===parentId);
+    if(!m) return res.status(404).json({ ok:false, error:'parent not found' });
+    m.replies = m.replies || [];
+    m.replies.push({ id: uid('rep_'), name, text, reactions: {} });
+    write('messages.json', messages);
+    return res.json({ ok:true });
+  } else {
+    messages.push({ id: uid('msg_'), name, text, reactions: {}, replies: [] });
+    write('messages.json', messages);
+    return res.json({ ok:true });
+  }
 });
 
-// leaderboard (score desc, time asc)
+app.patch('/api/messages/:id/react', (req,res)=>{
+  const { id } = req.params;
+  const { emoji, replyId } = req.body;
+  if(!emoji) return res.status(400).json({ ok:false, error:'emoji required' });
+  const messages = read('messages.json');
+  const m = messages.find(x=>x.id===id);
+  if(!m) return res.status(404).json({ ok:false, error:'message not found' });
+  if (replyId) {
+    const r = (m.replies||[]).find(x=>x.id===replyId);
+    if(!r) return res.status(404).json({ ok:false, error:'reply not found' });
+    r.reactions = r.reactions || {};
+    r.reactions[emoji] = (r.reactions[emoji]||0) + 1;
+  } else {
+    m.reactions = m.reactions || {};
+    m.reactions[emoji] = (m.reactions[emoji]||0) + 1;
+  }
+  write('messages.json', messages);
+  res.json({ ok:true });
+});
+
+// ---- Leaderboard ----
 app.get('/api/leaderboard', (req,res)=>{
   const contest = read('contest.json');
   const sorted = [...contest].sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalSeconds||0)-(b.totalSeconds||0));
   res.json(sorted);
 });
 
-// admin getters
+// ---- Admin GET ----
 app.get('/api/admin/registrations', (req,res)=> res.json(read('players.json')) );
 app.get('/api/admin/tickets', (req,res)=> res.json(read('tickets.json')) );
 app.get('/api/admin/tickets/total', (req,res)=>{
@@ -74,7 +108,7 @@ app.get('/api/admin/tickets/total', (req,res)=>{
 app.get('/api/admin/shooting', (req,res)=> res.json(read('contest.json')) );
 app.get('/api/admin/teams', (req,res)=> res.json(read('teams.json')) );
 
-// admin save shooter (minutes:seconds)
+// ---- Admin SAVE shooter (MM:SS) ----
 app.patch('/api/admin/shooting/:id', (req,res)=>{
   const { id } = req.params;
   const contest = read('contest.json');
@@ -88,7 +122,7 @@ app.patch('/api/admin/shooting/:id', (req,res)=>{
   res.json({ ok:true });
 });
 
-// auto-assign teams
+// ---- Auto-assign teams ----
 app.post('/api/admin/auto-teams', (req,res)=>{
   const players = read('players.json').filter(p=>p?.events?.team).map(p=>p.name);
   const shuffled = [...players].sort(()=>Math.random()-0.5);
@@ -98,7 +132,7 @@ app.post('/api/admin/auto-teams', (req,res)=>{
   res.json({ ok:true, teams });
 });
 
-// reset
+// ---- Reset test data ----
 app.post('/api/admin/reset', (req,res)=>{
   write('players.json', []);
   write('tickets.json', []);
@@ -108,7 +142,7 @@ app.post('/api/admin/reset', (req,res)=>{
   res.json({ ok:true });
 });
 
-// serve built frontend (for Docker all-in-one deploy)
+// serve built frontend (for Docker all-in-one)
 const dist = path.join(__dirname, '..', 'frontend', 'dist');
 if (fs.existsSync(dist)) {
   app.use(express.static(dist));

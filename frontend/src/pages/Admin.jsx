@@ -1,15 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 const API = import.meta.env.VITE_API_BASE || '';
 const PASS = 'admin123';
 
-function parseMMSS(mm, ss){
-  const m = Number(mm)||0, s = Number(ss)||0;
-  return Math.max(0, m*60 + s);
-}
-function fromTotal(total){
-  const m = Math.floor((total||0)/60), s = Math.max(0,(total||0)-m*60);
-  return { mm:String(m).padStart(2,'0'), ss:String(s).padStart(2,'0') };
-}
+function parseMMSS(mm, ss){ return Math.max(0,(Number(mm)||0)*60 + (Number(ss)||0)); }
+function fromTotal(total){ const m=Math.floor((total||0)/60), s=(total||0)-m*60; return {mm:String(m).padStart(2,'0'), ss:String(s).padStart(2,'0')}; }
 
 export default function Admin(){
   const [ok, setOk] = useState(false);
@@ -34,29 +28,12 @@ export default function Admin(){
     setTeams(await r4.json());
     setTicketTotal((await r5.json()).total || 0);
   };
-
   useEffect(()=>{ if(ok) load(); }, [ok]);
 
-  const autoTeams = async ()=>{
-    setStatus('Assigning teams…');
-    await fetch(`${API}/api/admin/auto-teams`, { method:'POST' });
-    setStatus('Teams assigned.');
-    await load();
-  };
+  const autoTeams = async ()=>{ setStatus('Assigning teams…'); await fetch(`${API}/api/admin/auto-teams`, { method:'POST' }); setStatus('Teams assigned.'); await load(); };
+  const resetAll = async ()=>{ setStatus('Clearing test data…'); await fetch(`${API}/api/admin/reset`, { method:'POST' }); setStatus('All test data cleared.'); await load(); };
 
-  const resetAll = async ()=>{
-    setStatus('Clearing test data…');
-    await fetch(`${API}/api/admin/reset`, { method:'POST' });
-    setStatus('All test data cleared.');
-    await load();
-  };
-
-  if(!ok){
-    return <div className="max-w-md mx-auto px-4 py-10">
-      <h2 className="text-3xl font-bold text-primary mb-4">Admin Login</h2>
-      <button onClick={()=>setOk(window.prompt('Password?')===PASS)} className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/80 font-semibold">Enter</button>
-    </div>
-  }
+  if(!ok) return <div className="max-w-md mx-auto px-4 py-10"><h2 className="text-3xl font-bold text-primary mb-4">Admin Login</h2><button onClick={()=>setOk(window.prompt('Password?')===PASS)} className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/80 font-semibold">Enter</button></div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
@@ -94,9 +71,7 @@ export default function Admin(){
           <table className="min-w-full text-sm">
             <thead className="bg-black/60"><tr><th className="px-3 py-2 text-left">Player</th><th className="px-3 py-2">Score</th><th className="px-3 py-2">MM</th><th className="px-3 py-2">SS</th><th className="px-3 py-2">Save</th></tr></thead>
             <tbody>
-              {shooters.map((s)=>(
-                <ShooterRow key={s.id} s={s} onSaved={load}/>
-              ))}
+              {shooters.map((s)=> (<ShooterRow key={s.id} s={s} onSaved={load}/>))}
             </tbody>
           </table>
         </div>
@@ -128,9 +103,9 @@ export default function Admin(){
 
 function ShooterRow({ s, onSaved }){
   const [score, setScore] = useState(s.score||0);
-  const { mm, ss } = fromTotal(s.totalSeconds||0);
-  const [m, setM] = useState(mm);
-  const [sec, setSec] = useState(ss);
+  const t = fromTotal(s.totalSeconds||0);
+  const [m, setM] = useState(t.mm);
+  const [sec, setSec] = useState(t.ss);
 
   const save = async ()=>{
     const total = parseMMSS(m, sec);

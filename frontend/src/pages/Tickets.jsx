@@ -10,7 +10,7 @@ export default function Tickets(){
     const r = await fetch(`${API}/api/admin/tickets/total`);
     const d = await r.json(); setTotal(d.total||0);
   };
-  useEffect(()=>{ loadTotal(); }, []);
+  useEffect(()=>{ loadTotal(); const id=setInterval(loadTotal, 5000); return ()=>clearInterval(id); }, []);
 
   const submit = async (e)=>{
     e.preventDefault();
