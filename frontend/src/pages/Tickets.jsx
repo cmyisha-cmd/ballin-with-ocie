@@ -46,7 +46,7 @@ export default function Tickets() {
         <label style={{ display:"block", marginBottom:"0.5rem" }}>Name*</label>
         <input type="text" name="name" value={form.name} onChange={handleChange}
           style={{ width:"100%", padding:"0.5rem", marginBottom:"1rem", borderRadius:"6px" }} />
-        <label style={{ display:"block", marginBottom:"0.5rem" }}>Number of Tickets*</label>
+        <label style={{ display:"block", marginBottom:"0.5rem" }}>Number of Non-Player Tickets*</label>
         <input type="number" name="count" value={form.count} onChange={handleChange}
           style={{ width:"100%", padding:"0.5rem", marginBottom:"1rem", borderRadius:"6px" }} />
         <button type="submit" style={{
