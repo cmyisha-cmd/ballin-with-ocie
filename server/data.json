@@ -2,78 +2,26 @@
   "players": [
     {
       "id": 1,
-      "name": "Ocie Rivers",
-      "age": 28,
-      "shooting": true,
-      "team": true,
-      "score": 18,
-      "time": 29.5
-    },
-    {
-      "id": 2,
-      "name": "Jamal Price",
-      "age": 24,
-      "shooting": true,
-      "team": true,
-      "score": 22,
-      "time": 31.2
-    },
-    {
-      "id": 3,
-      "name": "Nina Carter",
-      "age": 21,
-      "shooting": true,
-      "team": false,
-      "score": 17,
-      "time": 30.8
-    },
-    {
-      "id": 4,
-      "name": "Avery Miles",
-      "age": 26,
-      "shooting": true,
-      "team": true,
-      "score": 22,
-      "time": 28.7
+      "name": "Ocie Johnson",
+      "age": 13,
+      "shootingScore": 18,
+      "time": "00:42"
     }
   ],
-  "teams": [
-    {
-      "name": "Lakers",
-      "players": [
-        "Ocie Rivers",
-        "Avery Miles"
-      ]
-    },
-    {
-      "name": "Celtics",
-      "players": [
-        "Jamal Price"
-      ]
-    }
-  ],
+  "teams": [],
   "tickets": [
     {
-      "id": 101,
-      "name": "Shannon Lee",
-      "count": 3
-    },
-    {
-      "id": 102,
-      "name": "Chris Vaughn",
-      "count": 2
+      "id": 1,
+      "name": "Alice",
+      "tickets": 2
     }
   ],
   "messages": [
     {
-      "id": 201,
-      "name": "Coach T",
-      "text": "Happy birthday! Let\u2019s make this the best edition yet! \ud83c\udf89"
-    },
-    {
-      "id": 202,
-      "name": "Maya",
-      "text": "Go Ocie! Can\u2019t wait to see the showdown \ud83d\udd25"
+      "id": 1,
+      "name": "Coach K",
+      "message": "Let's go Ocie!",
+      "replies": []
     }
   ]
 }
