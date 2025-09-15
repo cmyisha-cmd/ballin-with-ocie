@@ -1,10 +1,11 @@
+const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
 import { useState } from 'react'
 
 export default function Tickets() {
   const [form, setForm] = useState({ name:'', count:1 })
   const submit = async (e) => {
     e.preventDefault()
-    await fetch('/api/tickets', {
+    await fetch(`${API}/api/tickets`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ name: form.name, count: Number(form.count||1) })

@@ -1,3 +1,4 @@
+const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
 import { useEffect, useState } from 'react'
 
 const ADMIN_PASSWORD = 'admin123'
@@ -13,9 +14,9 @@ export default function Admin() {
 
   const fetchAll = async () => {
     const [p, t, tm] = await Promise.all([
-      fetch('/api/players').then(r=>r.json()),
-      fetch('/api/tickets').then(r=>r.json()),
-      fetch('/api/teams').then(r=>r.json())
+      fetch(`${API}/api/players`).then(r=>r.json()),
+      fetch(`${API}/api/tickets`).then(r=>r.json()),
+      fetch(`${API}/api/teams`).then(r=>r.json())
     ])
     setPlayers(p); setTickets(t); setTeams(tm)
   }
@@ -30,7 +31,7 @@ export default function Admin() {
   const saveScore = async (id) => {
     const d = inputs[id]
     if (!d) return
-    await fetch('/api/scores', {
+    await fetch(`${API}/api/scores`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ playerId:id, score:Number(d.score||0), time:Number(d.time||0) })
@@ -39,7 +40,7 @@ export default function Admin() {
   }
 
   const autoAssign = async () => {
-    await fetch('/api/teams/auto-assign', { method:'POST' })
+    await fetch(`${API}/api/teams/auto-assign`, { method:'POST' })
     await fetchAll()
   }
 

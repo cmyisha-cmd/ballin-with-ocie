@@ -29,3 +29,9 @@ npm start
 ## Admin Login
 - Go to `/admin`
 - Password: `admin123`
+
+
+### Frontend → Backend API
+By default the frontend calls: `https://ballin-with-ocie.onrender.com`.
+
+To point elsewhere, set **Vercel Project Env**: `VITE_API_BASE=https://YOUR-RENDER-URL` and redeploy.

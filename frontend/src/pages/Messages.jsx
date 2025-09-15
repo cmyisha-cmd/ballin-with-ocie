@@ -1,15 +1,16 @@
+const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
 import { useState, useEffect } from 'react'
 
 export default function Messages() {
   const [form, setForm] = useState({ name:'', message:'' })
   const [items, setItems] = useState([])
   const load = async () => {
-    const res = await fetch('/api/messages')
+    const res = await fetch(`${API}/api/messages`)
     setItems(await res.json())
   }
   const submit = async (e) => {
     e.preventDefault()
-    await fetch('/api/messages', {
+    await fetch(`${API}/api/messages`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ name: form.name, message: form.message })

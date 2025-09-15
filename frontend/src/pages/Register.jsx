@@ -1,3 +1,4 @@
+const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
 import { useState } from 'react'
 
 export default function Register() {
@@ -12,7 +13,7 @@ export default function Register() {
     e.preventDefault()
     // Register for each selected event as individual entries
     for (const ev of form.events) {
-      await fetch('/api/players', {
+      await fetch(`${API}/api/players`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ name: form.name, age: Number(form.age||0), event: ev })

@@ -1,9 +1,10 @@
+const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
 import { useEffect, useState } from 'react'
 
 export default function Leaderboard() {
   const [rows, setRows] = useState([])
   const load = async () => {
-    const res = await fetch('/api/leaderboard')
+    const res = await fetch(`${API}/api/leaderboard`)
     setRows(await res.json())
   }
   useEffect(()=>{ load(); const t=setInterval(load, 10000); return ()=>clearInterval(t) }, [])
