@@ -1,10 +1,7 @@
-export default function Footer() {
+export default function Footer(){
   return (
-    <footer className="border-t border-neutral-800 bg-neutral-950/60">
-      <div className="max-w-6xl mx-auto px-4 py-6 text-sm text-neutral-400">
-        <div>Ballin’ with Ocie: 13th Edition • Sept 27, 2025 • 2:00 PM</div>
-        <div>P.B. Edwards Jr. Gymnasium — 101 Turnberry Street, Port Wentworth, GA 31407</div>
-      </div>
+    <footer className="bg-ink/90 border-t border-primary/30 text-center text-xs text-purple-200 py-4">
+      Ballin’ with Ocie — 13th Edition · Sept 27, 2025 · 2:00 PM · P.B. Edwards Jr. Gymnasium
     </footer>
-  )
+  );
 }

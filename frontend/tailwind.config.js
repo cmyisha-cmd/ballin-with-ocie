@@ -1,15 +1,10 @@
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
-      colors: {
-        nbaPurple: '#6E34B8',
-        nbaDark: '#0B0B0F'
-      },
-      boxShadow: {
-        glow: '0 8px 30px rgba(110,52,184,0.35)'
-      }
+      colors: { primary:'#6E34B8', ink:'#0A0A0E' },
+      boxShadow: { glow:'0 10px 30px rgba(110,52,184,.35)' }
     }
   },
-  plugins: [],
+  plugins: []
 };

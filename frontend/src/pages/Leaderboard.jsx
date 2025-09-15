@@ -1,25 +1,20 @@
 import { useEffect, useState } from 'react';
-import { API } from '../utils/api';
+const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
 
 export default function Leaderboard(){
   const [rows, setRows] = useState([]);
 
   const load = async ()=>{
-    const res = await fetch(`${API}/api/leaderboard`);
-    const data = await res.json();
-    setRows(data);
+    const r = await fetch(`${API}/api/leaderboard`);
+    const d = await r.json();
+    setRows(d);
   };
-
-  useEffect(()=>{
-    load();
-    const id = setInterval(load, 5000);
-    return ()=>clearInterval(id);
-  }, []);
+  useEffect(()=>{ load(); const id=setInterval(load, 4000); return ()=>clearInterval(id); }, []);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10 text-white">
-      <h3 className="text-3xl font-bold mb-6 text-purple-400">Shooting Contest Leaderboard</h3>
-      <div className="overflow-auto rounded-xl border border-purple-900/40 bg-nbaDark/60">
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      <h2 className="text-3xl font-bold text-primary mb-6">Shooting Contest Leaderboard</h2>
+      <div className="overflow-auto rounded-xl border border-primary/30 bg-ink/80">
         <table className="min-w-full text-sm">
           <thead className="bg-black/60">
             <tr>

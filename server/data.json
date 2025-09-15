@@ -1,131 +1,42 @@
 {
-  "players": [
+  "registrations": [
     {
-      "id": 101,
-      "name": "Ocie Johnson",
-      "age": 13,
-      "event": "Shooting Contest",
-      "score": 15,
-      "time": 72
-    },
-    {
-      "id": 102,
-      "name": "Jayden Carter",
-      "age": 14,
-      "event": "Shooting Contest",
-      "score": 12,
-      "time": 90
-    },
-    {
-      "id": 103,
-      "name": "Miles Brown",
-      "age": 13,
-      "event": "Shooting Contest",
-      "score": 10,
-      "time": 80
-    },
-    {
-      "id": 201,
-      "name": "Ocie Johnson",
-      "age": 13,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
-    },
-    {
-      "id": 202,
-      "name": "Jayden Carter",
-      "age": 14,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
-    },
-    {
-      "id": 203,
-      "name": "Miles Brown",
-      "age": 13,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
-    },
-    {
-      "id": 204,
-      "name": "Chris Hall",
-      "age": 14,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
-    },
-    {
-      "id": 205,
-      "name": "Devin Lee",
-      "age": 13,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
-    },
-    {
-      "id": 206,
-      "name": "Ian Brooks",
-      "age": 13,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
-    },
-    {
-      "id": 207,
-      "name": "Logan Smith",
-      "age": 14,
-      "event": "Team Tournament",
-      "score": 0,
-      "time": 0
+      "name": "Jordan Sparks",
+      "age": 16,
+      "events": {
+        "shooting": true,
+        "team": true
+      }
     }
   ],
   "tickets": [
     {
-      "id": 1,
-      "name": "Sarah Thompson",
+      "name": "A. Spectator",
       "count": 2
-    },
-    {
-      "id": 2,
-      "name": "Marcus Green",
-      "count": 3
     }
   ],
   "messages": [
     {
-      "id": 1,
-      "name": "Coach D",
-      "message": "Happy Birthday Ocie! Go get those buckets!"
-    },
-    {
-      "id": 2,
-      "name": "Auntie Lisa",
-      "message": "We\u2019re cheering for you! \ud83c\udf89\ud83c\udfc0"
+      "name": "Coach",
+      "text": "Happy Birthday and good luck!",
+      "ts": 1690000000000
     }
   ],
-  "teams": [
+  "leaderboard": [
     {
-      "id": 1,
-      "name": "Team Purple",
-      "players": [
-        201,
-        203,
-        205
-      ],
-      "score": 24
+      "name": "Ocie",
+      "score": 23,
+      "time": 38
     },
     {
-      "id": 2,
-      "name": "Team Black",
-      "players": [
-        202,
-        204,
-        206,
-        207
-      ],
-      "score": 19
+      "name": "M. Carter",
+      "score": 20,
+      "time": 41
+    },
+    {
+      "name": "J. Lee",
+      "score": 18,
+      "time": 43
     }
   ]
 }

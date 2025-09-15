@@ -1,19 +1,13 @@
-# Ballin' with Ocie — Live Test Build
+# Ballin' with Ocie — Classic Working Build
+- NBA-like purple/black theme, classic layout.
+- Pages: Home, Register, Tickets, Leaderboard, Birthday Wall, Admin.
+- Admin: score edit (score/time), registrations, tickets, team auto-assign.
+- Backend: Express + JSON file persistence.
 
-## Run locally (Docker)
-```bash
+## Run (Docker)
 docker compose up --build
-# open http://localhost:4000
-```
+# http://localhost:4000
 
 ## Deploy
-- **Render (backend)**: start `node server/index.js`
-- **Vercel (frontend)**: uses `vercel.json` and `frontend`
-
-## API
-- POST /api/register  → { name, age, events:{shooting,team}, contact }
-- POST /api/tickets   → { name, count, contact }
-- GET  /api/leaderboard
-- GET  /api/admin/registrations
-- GET  /api/admin/tickets
-- POST /api/admin/reset
+- Render (Docker) URL serves frontend + API together
+- Or split: Vercel(frontend) + Render(backend) and set VITE_API_BASE

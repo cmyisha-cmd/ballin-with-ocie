@@ -1,42 +1,39 @@
+import { useEffect, useState } from 'react';
 const API = import.meta.env.VITE_API_BASE || 'https://ballin-with-ocie.onrender.com';
-import { useState, useEffect } from 'react'
 
-export default function Messages() {
-  const [form, setForm] = useState({ name:'', message:'' })
-  const [items, setItems] = useState([])
-  const load = async () => {
-    const res = await fetch(`${API}/api/messages`)
-    setItems(await res.json())
-  }
-  const submit = async (e) => {
-    e.preventDefault()
-    await fetch(`${API}/api/messages`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name: form.name, message: form.message })
-    })
-    setForm({ name:'', message:'' })
-    await load()
-  }
-  useEffect(()=>{ load() }, [])
+export default function Messages(){
+  const [items, setItems] = useState([]);
+  const [name, setName] = useState('');
+  const [text, setText] = useState('');
+
+  const load = async ()=>{
+    const r = await fetch(`${API}/api/messages`);
+    setItems(await r.json());
+  };
+  useEffect(()=>{ load(); }, []);
+
+  const submit = async (e)=>{
+    e.preventDefault();
+    await fetch(`${API}/api/messages`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, text, ts: Date.now() }) });
+    setName(''); setText(''); load();
+  };
+
   return (
-    <section className="max-w-3xl mx-auto px-4 py-10">
-      <h2 className="text-3xl font-bold text-primary mb-4">Send a Birthday Wish</h2>
-      <form onSubmit={submit} className="card space-y-4">
-        <input className="w-full p-3 rounded bg-neutral-900 border border-neutral-800" placeholder="Your Name"
-               value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
-        <textarea className="w-full p-3 rounded bg-neutral-900 border border-neutral-800" placeholder="Your Message"
-               value={form.message} onChange={e=>setForm({...form, message:e.target.value})} required />
-        <button className="btn w-full" type="submit">Post Message</button>
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <h2 className="text-3xl font-bold text-primary mb-6">Birthday Wall</h2>
+      <form onSubmit={submit} className="space-y-3 mb-6 bg-ink/80 border border-primary/30 p-6 rounded-xl">
+        <input className="w-full p-3 rounded bg-black/60 border border-primary/40" placeholder="Your Name" value={name} onChange={e=>setName(e.target.value)} required />
+        <textarea className="w-full p-3 rounded bg-black/60 border border-primary/40" rows="3" placeholder="Type a message…" value={text} onChange={e=>setText(e.target.value)} required />
+        <button className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/80 font-semibold">Send</button>
       </form>
-      <div className="mt-6 space-y-3">
-        {items.map(m => (
-          <div key={m.id} className="card">
-            <strong className="text-primary">{m.name}</strong>
-            <div className="text-neutral-200">{m.message}</div>
+      <div className="space-y-3">
+        {items.map((m,i)=>(
+          <div key={i} className="p-4 rounded-xl bg-black/50 border border-primary/30">
+            <div className="text-sm text-purple-300">{m.name}</div>
+            <div>{m.text}</div>
           </div>
         ))}
       </div>
-    </section>
-  )
+    </div>
+  );
 }

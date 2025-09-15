@@ -1,28 +1,22 @@
-import { Link, NavLink } from 'react-router-dom'
-
-const NavItem = ({ to, children }) => (
-  <NavLink
-    to={to}
-    className={({isActive}) => `px-3 py-2 rounded hover:bg-neutral-800 ${isActive ? 'text-primary' : 'text-white'}`}
-  >
-    {children}
-  </NavLink>
-)
-
-export default function Navbar() {
+import { Link, useLocation } from 'react-router-dom';
+export default function Navbar(){
+  const { pathname } = useLocation();
+  const link = (to, label) => (
+    <Link to={to} className={`px-3 py-2 rounded-md text-sm font-semibold transition ${pathname===to?'bg-primary text-white':'text-purple-300 hover:text-white hover:bg-primary/20'}`}>{label}</Link>
+  );
   return (
-    <header className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur sticky top-0 z-10">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="font-extrabold text-xl text-primary">Ballin’ with Ocie</Link>
+    <header className="bg-ink/90 border-b border-primary/30 backdrop-blur">
+      <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+        <div className="text-xl font-extrabold tracking-wide">Ballin’ with Ocie</div>
         <nav className="flex gap-2">
-          <NavItem to="/">Home</NavItem>
-          <NavItem to="/register">Register</NavItem>
-          <NavItem to="/tickets">Get Tickets</NavItem>
-          <NavItem to="/messages">Messages</NavItem>
-          <NavItem to="/leaderboard">Leaderboard</NavItem>
-          <NavItem to="/admin">Admin</NavItem>
+          {link('/','Home')}
+          {link('/register','Register')}
+          {link('/tickets','Tickets')}
+          {link('/leaderboard','Leaderboard')}
+          {link('/messages','Birthday Wall')}
+          {link('/admin','Admin')}
         </nav>
       </div>
     </header>
-  )
+  );
 }
