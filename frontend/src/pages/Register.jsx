@@ -1,26 +1,29 @@
+import { useState } from "react";
+
 export default function Register() {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [events, setEvents] = useState([]);
+
+  const toggleEvent = (event) => {
+    setEvents((prev) =>
+      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event]
+    );
+  };
+
   return (
-    <div className="bg-black min-h-screen text-white p-8">
-      <h1 className="text-4xl font-bold text-purple-400 mb-6">Player Registration</h1>
-      <form className="space-y-4 max-w-md mx-auto bg-gray-900 p-6 rounded-xl shadow-lg">
-        <div>
-          <label className="block mb-1">Name</label>
-          <input type="text" placeholder="Enter name" className="w-full p-2 rounded bg-gray-800 border border-gray-700"/>
+    <div className="bg-black min-h-screen text-white p-8 flex flex-col items-center">
+      <h1 className="text-4xl font-bold text-purple-500 mb-6">Player Registration</h1>
+      <form className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
+        <input className="w-full p-3 rounded bg-gray-800 text-white" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input className="w-full p-3 rounded bg-gray-800 text-white" placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)} />
+        <div className="space-y-2">
+          <label className="block"><input type="checkbox" onChange={() => toggleEvent("Shooting Contest")} /> Shooting Contest</label>
+          <label className="block"><input type="checkbox" onChange={() => toggleEvent("Team Tournament")} /> Team Tournament</label>
         </div>
-        <div>
-          <label className="block mb-1">Age</label>
-          <input type="number" placeholder="Enter age" className="w-full p-2 rounded bg-gray-800 border border-gray-700"/>
-        </div>
-        <fieldset className="space-y-2">
-          <legend className="mb-2">Select Event(s):</legend>
-          <label className="flex items-center gap-2">
-            <input type="checkbox"/> Shooting Contest
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox"/> Team Tournament
-          </label>
-        </fieldset>
-        <button type="submit" className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded w-full">Register</button>
+        <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full">
+          Register
+        </button>
       </form>
     </div>
   );
