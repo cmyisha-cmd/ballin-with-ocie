@@ -37,3 +37,17 @@ export default function Admin() {
     </div>
   );
 }
+// Add inside Admin.jsx, below players table
+<h3 style={{ marginTop:"2rem", color:"#8A2BE2" }}>Spectator Tickets</h3>
+<ul>
+  {tickets.map((t, i) => (
+    <li key={i}>{t.name} - {t.count} tickets</li>
+  ))}
+</ul>
+
+<h3 style={{ marginTop:"2rem", color:"#8A2BE2" }}>Messages</h3>
+<ul>
+  {messages.map((m, i) => (
+    <li key={i}><strong>{m.name}:</strong> {m.message}</li>
+  ))}
+</ul>
