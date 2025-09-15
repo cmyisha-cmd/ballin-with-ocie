@@ -1,1 +1,7 @@
-export default function Tickets() { return <div style={padding:'2rem', color:'white', background:'#0d0d0d'}>This is the Tickets page.</div>; }
+export default function Tickets() {
+  return (
+    <div style={{ padding: '2rem', color: 'white', background: '#0d0d0d' }}>
+      This is the Tickets page.
+    </div>
+  );
+}

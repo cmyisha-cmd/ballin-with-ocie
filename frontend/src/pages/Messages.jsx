@@ -1,1 +1,7 @@
-export default function Messages() { return <div style={padding:'2rem', color:'white', background:'#0d0d0d'}>This is the Messages page.</div>; }
+export default function Messages() {
+  return (
+    <div style={{ padding: '2rem', color: 'white', background: '#0d0d0d' }}>
+      This is the Messages page.
+    </div>
+  );
+}
