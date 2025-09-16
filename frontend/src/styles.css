@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{ --purple:#8A2BE2; }
+.nba-gradient{ background: radial-gradient(60% 60% at 50% 40%, rgba(138,43,226,0.25) 0%, rgba(0,0,0,0) 60%), #000;}
+.btn{ @apply bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg shadow; }
+.card{ @apply bg-zinc-900/70 border border-zinc-700 rounded-xl p-4; }
+.link{ @apply text-purple-400 hover:text-purple-300 underline; }
