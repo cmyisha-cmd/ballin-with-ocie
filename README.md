@@ -1,15 +1,28 @@
-# Ballin' with Ocie — Realtime Birthday Wall (Replies + Emoji + WebSockets)
-- Threaded replies and emoji reactions (👍 ❤️ 🎉 😂 🙌 👏 🔥 🥳) on messages and replies.
-- Realtime updates via Socket.IO.
-- Admin dashboard (registrations, shooting MM:SS, teams, tickets total).
-- Docker all-in-one and Vercel-ready frontend.
+# Ballin' with Ocie — Full Stack (Vite + Express)
 
-## Render (single service)
-- Connect repo, deploy. The Dockerfile serves both API and built frontend on port 4000.
+## Run locally
+```bash
+# terminal 1
+cd server
+npm install
+node index.js
 
-## Vercel + Render
-- Deploy server on Render (Docker).
-- Deploy /frontend on Vercel and set VITE_API_BASE=https://YOUR-RENDER-URL
+# terminal 2
+cd frontend
+npm install
+npm run dev
+```
 
-## Admin password
-- Default: admin123 (change in frontend/src/pages/Admin.jsx)
+Set frontend env if API is on a different host:
+```
+VITE_API_BASE=http://localhost:4000
+```
+
+## Docker (Render)
+- Create new Web Service from this repo. Render will build Dockerfile.
+- App serves frontend and API on the same URL.
+
+## Vercel + Render split
+- Deploy Docker to Render → copy URL
+- In Vercel Project (root), keep vercel.json and set routes with your Render URL.
+- In Vercel Project settings, add env `VITE_API_BASE` to the Render URL.
