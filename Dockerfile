@@ -1,17 +1,14 @@
-# --- Build frontend ---
 FROM node:18-alpine AS build-frontend
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/vite.config.js frontend/index.html frontend/src ./
+WORKDIR /app
+COPY frontend/package*.json ./
 RUN npm install
+COPY frontend ./
 RUN npm run build
 
-# --- Final server ---
 FROM node:18-alpine
 WORKDIR /app
+COPY --from=build-frontend /app/dist ./frontend/dist
 COPY server ./server
-COPY --from=build-frontend /app/frontend/dist ./frontend/dist
-WORKDIR /app/server
-RUN npm install
-ENV PORT=4000
+RUN cd server && npm install
 EXPOSE 4000
-CMD ["node","index.js"]
+CMD ["node","server/index.js"]

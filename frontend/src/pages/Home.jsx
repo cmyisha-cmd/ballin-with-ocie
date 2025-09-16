@@ -1,17 +1,13 @@
-import { Link } from 'react-router-dom'
-
-export default function Home(){
+export default function Home() {
   return (
-    <div className="hero container">
-      <div className="badge">Ballin' with Ocie: <b>13th Edition</b> • Sep 27, 2025 • 2:00 PM</div>
-      <h1>Welcome to Ballin’ with Ocie!</h1>
-      <p className="kicker">Register to play, get tickets, post birthday wishes, and track live scores.</p>
-      <div className="actions">
-        <Link className="btn" to="/register">Register to Play</Link>
-        <Link className="btn" to="/tickets">Get Tickets</Link>
-        <Link className="btn" to="/leaderboard">View Leaderboard</Link>
-        <Link className="btn" to="/birthday-wall">Leave a Birthday Wish</Link>
+    <div style={{minHeight:"calc(100vh - 100px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#000",color:"#fff"}}>
+      <h1 style={{fontSize:"48px",color:"#8A2BE2",textShadow:"0 6px 18px rgba(138,43,226,0.35)"}}>Welcome to Ballin' with Ocie 13th Edition!</h1>
+      <p>Register for contests, buy tickets, and track live results.</p>
+      <div style={{marginTop:"1rem"}}>
+        <a href="/register" style={{margin:"0 1rem",color:"#8A2BE2"}}>Register to Play</a>
+        <a href="/tickets" style={{margin:"0 1rem",color:"#8A2BE2"}}>Get Tickets</a>
+        <a href="/leaderboard" style={{margin:"0 1rem",color:"#8A2BE2"}}>View Leaderboard</a>
       </div>
     </div>
-  )
+  );
 }
