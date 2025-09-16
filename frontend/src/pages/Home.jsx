@@ -1,20 +1,18 @@
-import { Link } from 'react-router-dom'
 
-export default function Home(){
+import { Link } from 'react-router-dom';
+
+export default function Home() {
   return (
-    <div className="min-h-[calc(100vh-200px)] grid place-items-center px-6">
-      <div className="text-center space-y-6">
-        <h1 className="h1">Welcome to Ballin’ with Ocie!</h1>
-        <p className="text-gray-300 max-w-2xl mx-auto">
-          Register for the Shooting Contest and Team Tournament, secure tickets, leave a birthday message, and track live scores & brackets.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link className="btn" to="/register">Register to Play</Link>
-          <Link className="btn" to="/tickets">Get Tickets</Link>
-          <Link className="btn" to="/leaderboard">View Leaderboard</Link>
-          <Link className="btn" to="/birthday-wall">Leave a Birthday Wish</Link>
-        </div>
-      </div>
+    <div style={{
+      background:"#000", color:"#fff", textAlign:"center",
+      minHeight:"100vh", display:"flex", flexDirection:"column",
+      justifyContent:"center", alignItems:"center"
+    }}>
+      <h1 style={{color:"#8A2BE2", fontSize:"48px"}}>Welcome to Ballin’ with Ocie!</h1>
+      <p style={{color:"#E5E5E5"}}>Register for contests, get tickets, and leave a birthday message.</p>
+      <Link to="/register"><button>Register to Play</button></Link>
+      <Link to="/tickets"><button>Get Tickets</button></Link>
+      <Link to="/birthday-wall"><button>Leave a Birthday Wish</button></Link>
     </div>
-  )
+  );
 }

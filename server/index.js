@@ -1,64 +1,18 @@
-import express from "express";
-import cors from "cors";
+
+import express from 'express';
+import cors from 'cors';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let messages = [
-  {
-    id: 1,
-    name: "Coach Mike",
-    text: "Happy 13th Birthday Ocie!",
-    emoji: "🎉",
-    replies: []
-  }
-];
+let players = [];
+let tickets = [];
 
-// Fetch all messages
-app.get("/api/messages", (req, res) => {
-  res.json(messages);
-});
+app.get('/api/players', (req,res)=> res.json(players));
+app.post('/api/players', (req,res)=> { players.push(req.body); res.json({status:'ok'}); });
 
-// Post a new message
-app.post("/api/messages", (req, res) => {
-  const { name, text, emoji } = req.body;
-  const newMessage = {
-    id: Date.now(),
-    name,
-    text,
-    emoji: emoji || "",
-    replies: []
-  };
-  messages.push(newMessage);
-  res.json(newMessage);
-});
+app.get('/api/tickets', (req,res)=> res.json(tickets));
+app.post('/api/tickets', (req,res)=> { tickets.push(req.body); res.json({status:'ok'}); });
 
-// Add reply to a message
-app.post("/api/messages/:id/replies", (req, res) => {
-  const { id } = req.params;
-  const { text } = req.body;
-  const msg = messages.find(m => m.id == id);
-  if (msg) {
-    msg.replies.push({ id: Date.now(), text });
-    res.json(msg);
-  } else {
-    res.status(404).json({ error: "Message not found" });
-  }
-});
-
-// Admin delete a message
-app.delete("/api/messages/:id", (req, res) => {
-  const { id } = req.params;
-  messages = messages.filter(m => m.id != id);
-  res.json({ success: true });
-});
-
-// Admin reset (clear all messages)
-app.delete("/api/messages", (req, res) => {
-  messages = [];
-  res.json({ success: true });
-});
-
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(4000, ()=> console.log("Server running on port 4000"));
