@@ -1,42 +1,110 @@
-import { useState } from "react";
-import MessageCard from "../components/MessageCard";
+import React, { useState } from "react";
 
 export default function BirthdayWall() {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Happy Birthday Ocie! 🎉", replies: [], reactions: { "👍": 2, "🎂": 1 } },
-    { id: 2, text: "Wishing you many more!", replies: [], reactions: { "❤️": 1 } }
+    { id: 1, name: "Kayla", text: "Happy Birthday Ocie! 🎉", reactions: { "🎉": 2, "❤️": 3 }, replies: [] },
+    { id: 2, name: "Shon", text: "We love you! 🏀", reactions: { "🏀": 1 }, replies: [] }
   ]);
   const [newMessage, setNewMessage] = useState("");
-  const [adminMode, setAdminMode] = useState(false);
-  const [password, setPassword] = useState("");
+  const [newName, setNewName] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const addMessage = () => {
-    if (newMessage.trim()) {
-      setMessages([...messages, { id: Date.now(), text: newMessage, replies: [], reactions: {} }]);
-      setNewMessage("");
-    }
+  const emojis = ["🎉", "❤️", "😂", "👍", "🙌"];
+
+  const handlePost = () => {
+    if (!newMessage.trim()) return;
+    const newMsg = {
+      id: Date.now(),
+      name: newName || "Guest",
+      text: newMessage,
+      reactions: {},
+      replies: []
+    };
+    setMessages([newMsg, ...messages]);
+    setNewMessage("");
   };
 
-  const handleLogin = () => {
-    if (password === "ocie2025") setAdminMode(true);
+  const handleReact = (id, emoji) => {
+    setMessages(messages.map(msg => {
+      if (msg.id === id) {
+        return {
+          ...msg,
+          reactions: {
+            ...msg.reactions,
+            [emoji]: (msg.reactions[emoji] || 0) + 1
+          }
+        };
+      }
+      return msg;
+    }));
   };
 
   return (
-    <div style={{ padding:"2rem", background:"#111", color:"#fff", minHeight:"100vh" }}>
-      <h2 style={{ fontSize:"40px", color:"#8A2BE2" }}>Birthday Wall</h2>
-      {!adminMode && (
-        <div style={{ marginBottom:"1rem" }}>
-          <input type="password" placeholder="Admin Password" value={password} onChange={e => setPassword(e.target.value)} />
-          <button onClick={handleLogin}>Login</button>
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-yellow-100 p-6">
+      <h1 className="text-4xl font-bold text-center text-purple-700 mb-4">
+        🎂 Kay'Loni’s Birthday Wall 🎂
+      </h1>
+
+      {/* New Message Form */}
+      <div className="bg-white shadow-lg rounded-xl p-4 max-w-lg mx-auto mb-6">
+        <input
+          className="w-full p-2 border rounded mb-3"
+          placeholder="Your Name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+        />
+        <textarea
+          className="w-full p-3 border rounded"
+          placeholder="Write a message..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+        />
+        <div className="flex justify-between mt-2">
+          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-xl">
+            😀
+          </button>
+          <button
+            onClick={handlePost}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          >
+            Post
+          </button>
         </div>
-      )}
-      <div style={{ marginBottom:"1rem" }}>
-        <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Write a birthday message..." />
-        <button onClick={addMessage}>Post</button>
+        {showEmojiPicker && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {emojis.map((emoji) => (
+              <span
+                key={emoji}
+                className="cursor-pointer text-2xl"
+                onClick={() => setNewMessage(newMessage + emoji)}
+              >
+                {emoji}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
-      {messages.map(msg => (
-        <MessageCard key={msg.id} message={msg} setMessages={setMessages} adminMode={adminMode} />
-      ))}
+
+      {/* Messages */}
+      <div className="space-y-4">
+        {messages.map((msg) => (
+          <div key={msg.id} className="bg-white p-4 rounded-xl shadow-md max-w-xl mx-auto">
+            <p className="font-bold text-purple-700">{msg.name}</p>
+            <p className="text-gray-800">{msg.text}</p>
+            <div className="flex gap-3 mt-2">
+              {emojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleReact(msg.id, emoji)}
+                  className="hover:scale-110 transition"
+                >
+                  {emoji} {msg.reactions[emoji] || ""}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
