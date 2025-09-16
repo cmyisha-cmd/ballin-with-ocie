@@ -1,15 +1,18 @@
-# Multi-stage: build frontend, run server and serve built assets
-FROM node:18-alpine AS build-frontend
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/vite.config.js frontend/tailwind.config.js frontend/postcss.config.js frontend/index.html ./
+# --- Build frontend ---
+FROM node:18-alpine as build-frontend
+WORKDIR /app
+COPY frontend/package.json frontend/vite.config.js frontend/tailwind.config.js frontend/postcss.config.cjs frontend/index.html ./
 COPY frontend/src ./src
 RUN npm install && npm run build
 
+# --- Final server ---
 FROM node:18-alpine
 WORKDIR /app
-ENV NODE_ENV=production
-COPY server ./server
-RUN cd server && npm install --production
-COPY --from=build-frontend /app/frontend/dist ./frontend/dist
-EXPOSE 4000
-CMD ["node", "server/index.js"]
+COPY ballin-with-ocie/package.json ./ballin-with-ocie/package.json
+RUN cd ballin-with-ocie && npm install
+COPY ballin-with-ocie ./ballin-with-ocie
+COPY --from=build-frontend /app/dist ./frontend/dist
+WORKDIR /app/ballin-with-ocie
+ENV PORT=10000
+EXPOSE 10000
+CMD ["npm","start"]

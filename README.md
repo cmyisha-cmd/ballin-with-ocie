@@ -1,11 +1,30 @@
-# Ballin' with Ocie - Server
+# Ballin' with Ocie — Clean Production (Frontend + Server)
 
-This is the production-ready server for Ballin' with Ocie.
+- **No sample data**. All JSON starts empty.
+- **Admin password**: `ocie2025` (header `x-admin-pass`)
+- **Frontend**: Vite + React + Tailwind (postcss config fixed as CJS)
+- **Server**: `ballin-with-ocie` (Express + JSON persistence)
+- **Vercel**: `vercel.json` proxies `/api` to Render backend
+- **Docker**: Multi-stage builds frontend and serves via server
 
-## Features
-- REST API for player registration, ticketing, team generation, and message wall
-- Persistent JSON data storage
-- Admin-protected reset and delete endpoints
+## Local Dev
+Frontend:
+```bash
+cd frontend
+npm i
+npm run dev
+```
+Server:
+```bash
+cd ballin-with-ocie
+npm i
+npm start
+```
 
-## Deployment
-Place this folder (`ballin-with-ocie`) in your repo root. Works with Render and Vercel backend.
+## Render (single service Docker)
+- Root = repo root
+- Docker deploy. App serves frontend + API at same domain.
+
+## Vercel + Render split
+- Render: deploy `ballin-with-ocie` as Node service
+- Vercel: set env `VITE_API_BASE=https://<your-render-service>.onrender.com` or keep `vercel.json` proxy

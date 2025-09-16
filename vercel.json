@@ -1,10 +1,22 @@
 {
   "version": 2,
   "builds": [
-    { "src": "frontend/vite.config.js", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+    {
+      "src": "frontend/vite.config.js",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "frontend/dist"
+      }
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "https://YOUR-RENDER-BACKEND.onrender.com/api/$1" },
-    { "src": "/(.*)", "dest": "/" }
+    {
+      "src": "/api/(.*)",
+      "dest": "https://ballin-with-ocie.onrender.com/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/dist/$1"
+    }
   ]
 }

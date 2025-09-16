@@ -1,38 +1,38 @@
-import React, { useEffect, useState } from 'react'
-import api from '../lib/api'
+import { useEffect, useState } from 'react'
+import { api } from '../lib/api'
 
 export default function Leaderboard(){
   const [rows, setRows] = useState([])
+
   const load = async ()=>{
-    const res = await api.get('/api/shooting'); setRows(res.data || [])
+    const list = await api.getShooting()
+    setRows(list)
   }
-  useEffect(()=>{ load(); const t=setInterval(load, 5000); return ()=>clearInterval(t) }, [])
+  useEffect(()=>{
+    load()
+    const t = setInterval(load, 5000)
+    return ()=> clearInterval(t)
+  }, [])
 
   return (
-    <section className="max-w-3xl mx-auto px-4 py-10">
-      <h3 className="text-2xl font-bold text-purple-400 mb-4">Shooting Contest Leaderboard</h3>
-      <div className="bg-neutral-900/60 border border-neutral-700 rounded">
-        <table className="w-full text-sm">
-          <thead className="text-neutral-300">
-            <tr>
-              <th className="text-left p-3 border-b border-neutral-700/80">#</th>
-              <th className="text-left p-3 border-b border-neutral-700/80">Player</th>
-              <th className="text-left p-3 border-b border-neutral-700/80">Score</th>
-              <th className="text-left p-3 border-b border-neutral-700/80">Time (mm:ss)</th>
-            </tr>
+    <section className="container-nba py-10">
+      <h2 className="text-3xl font-black text-nbaPurple">Shooting Contest Leaderboard</h2>
+      <div className="card mt-4 overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="text-zinc-400">
+            <tr><th className="py-2">#</th><th>Name</th><th>Score</th><th>Time</th></tr>
           </thead>
+        </table>
+        <table className="w-full text-left text-sm">
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={r.id} className="odd:bg-neutral-900/60">
-                <td className="p-3">{i+1}</td>
-                <td className="p-3">{r.name}</td>
-                <td className="p-3">{r.score}</td>
-                <td className="p-3">{r.time}</td>
+              <tr key={r.id} className="border-t border-zinc-800">
+                <td className="py-2 px-2 text-zinc-400">{i+1}</td>
+                <td className="px-2">{r.name}</td>
+                <td className="px-2 font-bold">{r.score}</td>
+                <td className="px-2">{r.time}</td>
               </tr>
             ))}
-            {rows.length===0 && (
-              <tr><td className="p-4 text-neutral-400" colSpan="4">No participants yet.</td></tr>
-            )}
           </tbody>
         </table>
       </div>
