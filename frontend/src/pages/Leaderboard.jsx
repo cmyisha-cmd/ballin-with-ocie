@@ -1,29 +1,31 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
-const API = __API_BASE__ || ''
+import { getJSON } from '../api'
 
 export default function Leaderboard(){
-  const [rows, setRows] = useState([])
-  async function load(){
-    const res = await axios.get(`${API}/api/shooting`)
-    setRows(res.data || [])
-  }
-  useEffect(()=>{ load(); const id=setInterval(load, 5000); return ()=>clearInterval(id)},[])
+  const [rows,setRows]=useState([])
+  const [count,setCount]=useState(0)
+  useEffect(()=>{
+    (async()=>{
+      const data = await getJSON('/leaderboard')
+      setRows(data.leaderboard||[]); setCount(data.count||0)
+    })()
+  },[])
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="h2 mb-4">Shooting Contest Leaderboard</h2>
-      <div className="card overflow-x-auto">
+    <div className="container" style={{padding:'2rem 1rem'}}>
+      <div className="row" style={{alignItems:'baseline'}}>
+        <h2 className="col">Shooting Contest Leaderboard</h2>
+        <div className="tag">Players in Shooting: {count}</div>
+      </div>
+      <div className="card">
         <table className="table">
-          <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th>Rank</th></tr></thead>
+          <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Time</th></tr></thead>
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={r.id} className="border-t border-white/5">
-                <td>{r.name}</td><td>{r.score}</td><td>{r.time}</td><td>#{i+1}</td>
-              </tr>
+              <tr key={r.id}><td>{i+1}</td><td>{r.name}</td><td>{r.score ?? '-'}</td><td>{r.time ?? '-'}</td></tr>
             ))}
           </tbody>
         </table>
-        <div className="mt-3 text-sm text-gray-400">Total contestants: {rows.length}</div>
       </div>
     </div>
   )

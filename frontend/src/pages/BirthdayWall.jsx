@@ -1,110 +1,102 @@
-import React, { useState } from "react";
+import { useEffect, useState } from 'react'
+import { getJSON, postJSON, del } from '../api'
 
-export default function BirthdayWall() {
-  const [messages, setMessages] = useState([
-    { id: 1, name: "Kayla", text: "Happy Birthday Ocie! 🎉", reactions: { "🎉": 2, "❤️": 3 }, replies: [] },
-    { id: 2, name: "Shon", text: "We love you! 🏀", reactions: { "🏀": 1 }, replies: [] }
-  ]);
-  const [newMessage, setNewMessage] = useState("");
-  const [newName, setNewName] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+const EMOJIS=['👍','❤️','🎉','😂','🙌']
 
-  const emojis = ["🎉", "❤️", "😂", "👍", "🙌"];
+export default function BirthdayWall(){
+  const [messages,setMessages]=useState([])
+  const [name,setName]=useState('')
+  const [text,setText]=useState('')
+  const [showPicker,setShowPicker]=useState(false)
+  const [admin,setAdmin]=useState(false)
+  const [pass,setPass]=useState('')
 
-  const handlePost = () => {
-    if (!newMessage.trim()) return;
-    const newMsg = {
-      id: Date.now(),
-      name: newName || "Guest",
-      text: newMessage,
-      reactions: {},
-      replies: []
-    };
-    setMessages([newMsg, ...messages]);
-    setNewMessage("");
-  };
+  useEffect(()=>{ (async()=>{
+    const data = await getJSON('/messages'); setMessages(data||[])
+  })() }, [])
 
-  const handleReact = (id, emoji) => {
-    setMessages(messages.map(msg => {
-      if (msg.id === id) {
-        return {
-          ...msg,
-          reactions: {
-            ...msg.reactions,
-            [emoji]: (msg.reactions[emoji] || 0) + 1
-          }
-        };
-      }
-      return msg;
-    }));
-  };
+  async function postMessage(){
+    if(!text.trim()) return;
+    const msg = await postJSON('/messages',{ name: name||'Guest', text })
+    setMessages([msg,...messages]); setText('')
+  }
+  async function react(id, emoji){
+    const res = await postJSON(`/messages/${id}/react`,{ emoji })
+    setMessages(messages.map(m=> m.id===id? res : m))
+  }
+  async function reply(id, replyText){
+    if(!replyText.trim()) return;
+    const res = await postJSON(`/messages/${id}/reply`,{ text: replyText, name: name || 'Guest' })
+    setMessages(messages.map(m=> m.id===id? res : m))
+  }
+  async function tryAdmin(){
+    if(pass==='ocie2025') setAdmin(true)
+  }
+  async function remove(id){
+    const res = await del(`/messages/${id}`, {'x-admin-pass':'ocie2025'})
+    if(res?.ok) setMessages(messages.filter(m=>m.id!==id))
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-yellow-100 p-6">
-      <h1 className="text-4xl font-bold text-center text-purple-700 mb-4">
-        🎂 Kay'Loni’s Birthday Wall 🎂
-      </h1>
-
-      {/* New Message Form */}
-      <div className="bg-white shadow-lg rounded-xl p-4 max-w-lg mx-auto mb-6">
-        <input
-          className="w-full p-2 border rounded mb-3"
-          placeholder="Your Name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <textarea
-          className="w-full p-3 border rounded"
-          placeholder="Write a message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-        />
-        <div className="flex justify-between mt-2">
-          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-xl">
-            😀
-          </button>
-          <button
-            onClick={handlePost}
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-          >
-            Post
-          </button>
-        </div>
-        {showEmojiPicker && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {emojis.map((emoji) => (
-              <span
-                key={emoji}
-                className="cursor-pointer text-2xl"
-                onClick={() => setNewMessage(newMessage + emoji)}
-              >
-                {emoji}
-              </span>
-            ))}
+    <div className="container" style={{padding:'2rem 1rem'}}>
+      <div className="card" style={{background:'linear-gradient(180deg,#1b0037,#0a0a0a)', marginBottom:'1rem'}}>
+        <h2>🎂 Birthday Wall</h2>
+        <p className="kicker">Leave a wish for Ocie — add emojis and replies!</p>
+        {!admin && (
+          <div className="row">
+            <input className="input col" type="password" placeholder="Admin password" value={pass} onChange={e=>setPass(e.target.value)} />
+            <button className="btn" onClick={tryAdmin}>Admin Login</button>
           </div>
         )}
       </div>
 
-      {/* Messages */}
-      <div className="space-y-4">
-        {messages.map((msg) => (
-          <div key={msg.id} className="bg-white p-4 rounded-xl shadow-md max-w-xl mx-auto">
-            <p className="font-bold text-purple-700">{msg.name}</p>
-            <p className="text-gray-800">{msg.text}</p>
-            <div className="flex gap-3 mt-2">
-              {emojis.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => handleReact(msg.id, emoji)}
-                  className="hover:scale-110 transition"
-                >
-                  {emoji} {msg.reactions[emoji] || ""}
-                </button>
-              ))}
-            </div>
+      <div className="card grid" style={{maxWidth:760, margin:'0 auto 1rem'}}>
+        <input className="input" placeholder="Your Name" value={name} onChange={e=>setName(e.target.value)} />
+        <textarea className="textarea" placeholder="Write your birthday message..." value={text} onChange={e=>setText(e.target.value)} />
+        <div className="row">
+          <button className="btn secondary" onClick={()=>setShowPicker(!showPicker)}>😀 Emoji</button>
+          <button className="btn" onClick={postMessage}>Post Message</button>
+        </div>
+        {showPicker && (
+          <div className="row" style={{flexWrap:'wrap'}}>
+            {EMOJIS.map(e=>(<button key={e} className="reactions" onClick={()=>setText(t=>t+e)}>{e}</button>))}
           </div>
-        ))}
+        )}
+      </div>
+
+      <div className="grid" style={{maxWidth:900, margin:'0 auto'}}>
+        {messages.map(m=> <Message key={m.id} m={m} onReact={react} onReply={reply} onDelete={remove} isAdmin={admin} />)}
       </div>
     </div>
-  );
+  )
+}
+
+function Message({m,onReact,onReply,onDelete,isAdmin}){
+  const [replyText,setReplyText]=useState('')
+  return (
+    <div className="card">
+      <div className="row" style={{justifyContent:'space-between'}}>
+        <div className="flex"><b style={{color:'var(--purple)'}}>{m.name}</b><span className="tag">#{m.id}</span></div>
+        {isAdmin && <button className="btn secondary" onClick={()=>onDelete(m.id)}>🗑 Remove</button>}
+      </div>
+      <p style={{margin:'.4rem 0 1rem'}}>{m.text}</p>
+      <div className="reactions row" style={{alignItems:'center'}}>
+        {EMOJIS.map(e=>(
+          <button key={e} onClick={()=>onReact(m.id,e)}>{e} <span className="small">{m.reactions?.[e]||''}</span></button>
+        ))}
+      </div>
+      <div className="row" style={{marginTop:'.6rem'}}>
+        <input className="input col" placeholder="Write a reply..." value={replyText} onChange={e=>setReplyText(e.target.value)} />
+        <button className="btn" onClick={()=>{ onReply(m.id, replyText); setReplyText(''); }}>Reply</button>
+      </div>
+      {m.replies?.length>0 && (
+        <div style={{marginTop:'.6rem'}}>
+          <div className="small">Replies</div>
+          <div className="grid">
+            {m.replies.map((r,i)=>(<div key={i} className="card" style={{background:'#0f0f0f'}}><b>{r.name}:</b> {r.text}</div>))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
