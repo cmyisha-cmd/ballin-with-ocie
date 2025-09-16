@@ -1,30 +1,41 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-const API = __API_BASE__ || ''
+import React, { useEffect, useState } from 'react'
+import api from '../lib/api'
 
 export default function Leaderboard(){
   const [rows, setRows] = useState([])
-  async function load(){
-    const res = await axios.get(`${API}/api/shooting`)
-    setRows(res.data || [])
+  const load = async ()=>{
+    const res = await api.get('/api/shooting'); setRows(res.data || [])
   }
-  useEffect(()=>{ load(); const id=setInterval(load, 5000); return ()=>clearInterval(id)},[])
+  useEffect(()=>{ load(); const t=setInterval(load, 5000); return ()=>clearInterval(t) }, [])
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="h2 mb-4">Shooting Contest Leaderboard</h2>
-      <div className="card overflow-x-auto">
-        <table className="table">
-          <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th>Rank</th></tr></thead>
+    <section className="max-w-3xl mx-auto px-4 py-10">
+      <h3 className="text-2xl font-bold text-purple-400 mb-4">Shooting Contest Leaderboard</h3>
+      <div className="bg-neutral-900/60 border border-neutral-700 rounded">
+        <table className="w-full text-sm">
+          <thead className="text-neutral-300">
+            <tr>
+              <th className="text-left p-3 border-b border-neutral-700/80">#</th>
+              <th className="text-left p-3 border-b border-neutral-700/80">Player</th>
+              <th className="text-left p-3 border-b border-neutral-700/80">Score</th>
+              <th className="text-left p-3 border-b border-neutral-700/80">Time (mm:ss)</th>
+            </tr>
+          </thead>
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={r.id} className="border-t border-white/5">
-                <td>{r.name}</td><td>{r.score}</td><td>{r.time}</td><td>#{i+1}</td>
+              <tr key={r.id} className="odd:bg-neutral-900/60">
+                <td className="p-3">{i+1}</td>
+                <td className="p-3">{r.name}</td>
+                <td className="p-3">{r.score}</td>
+                <td className="p-3">{r.time}</td>
               </tr>
             ))}
+            {rows.length===0 && (
+              <tr><td className="p-4 text-neutral-400" colSpan="4">No participants yet.</td></tr>
+            )}
           </tbody>
         </table>
-        <div className="mt-3 text-sm text-gray-400">Total contestants: {rows.length}</div>
       </div>
-    </div>
+    </section>
   )
 }

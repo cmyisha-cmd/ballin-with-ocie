@@ -1,17 +1,15 @@
-# -------- Build frontend --------
-FROM node:18 AS build-frontend
+# Multi-stage: build frontend, run server and serve built assets
+FROM node:18-alpine AS build-frontend
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend ./
-RUN npm run build
+COPY frontend/package.json frontend/vite.config.js frontend/tailwind.config.js frontend/postcss.config.js frontend/index.html ./
+COPY frontend/src ./src
+RUN npm install && npm run build
 
-# -------- Final image --------
-FROM node:18
+FROM node:18-alpine
 WORKDIR /app
+ENV NODE_ENV=production
 COPY server ./server
-RUN cd server && npm install
+RUN cd server && npm install --production
 COPY --from=build-frontend /app/frontend/dist ./frontend/dist
-ENV PORT=4000
 EXPOSE 4000
-CMD ["node","server/index.js"]
+CMD ["node", "server/index.js"]

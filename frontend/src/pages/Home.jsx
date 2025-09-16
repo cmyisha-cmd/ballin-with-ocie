@@ -1,20 +1,17 @@
-import { Link } from 'react-router-dom'
+import React from 'react'
 
 export default function Home(){
   return (
-    <div className="min-h-[calc(100vh-200px)] grid place-items-center px-6">
-      <div className="text-center space-y-6">
-        <h1 className="h1">Welcome to Ballin’ with Ocie!</h1>
-        <p className="text-gray-300 max-w-2xl mx-auto">
-          Register for the Shooting Contest and Team Tournament, secure tickets, leave a birthday message, and track live scores & brackets.
+    <section className="min-h-[calc(100vh-160px)] grid place-items-center bg-gradient-to-b from-black to-purple-950/20">
+      <div className="text-center px-6">
+        <h2 className="text-4xl md:text-6xl font-black text-purple-400 drop-shadow-[0_6px_18px_rgba(138,43,226,0.35)]">
+          Welcome to Ballin’ with Ocie!
+        </h2>
+        <p className="mt-4 text-neutral-300 max-w-2xl mx-auto">
+          Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message.
+          Track live scores and brackets during the event.
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link className="btn" to="/register">Register to Play</Link>
-          <Link className="btn" to="/tickets">Get Tickets</Link>
-          <Link className="btn" to="/leaderboard">View Leaderboard</Link>
-          <Link className="btn" to="/birthday-wall">Leave a Birthday Wish</Link>
-        </div>
       </div>
-    </div>
+    </section>
   )
 }

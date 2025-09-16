@@ -1,28 +1,17 @@
-# Ballin' with Ocie — Full Stack (Vite + Express)
+# Ballin' with Ocie — Clean Production (Full Project)
 
-## Run locally
-```bash
-# terminal 1
-cd server
-npm install
-node index.js
+No sample data. Same layout & styling. Fully wired to API.
 
-# terminal 2
-cd frontend
-npm install
-npm run dev
-```
+## Local
+npm install --prefix frontend
+npm run build --prefix frontend
+npm install --prefix server
+node server/index.js
 
-Set frontend env if API is on a different host:
-```
-VITE_API_BASE=http://localhost:4000
-```
+## Docker
+docker compose up --build
+# open http://localhost:4000
 
-## Docker (Render)
-- Create new Web Service from this repo. Render will build Dockerfile.
-- App serves frontend and API on the same URL.
-
-## Vercel + Render split
-- Deploy Docker to Render → copy URL
-- In Vercel Project (root), keep vercel.json and set routes with your Render URL.
-- In Vercel Project settings, add env `VITE_API_BASE` to the Render URL.
+## Deploy
+- Render (one service, Dockerfile): connect repo, deploy.
+- Vercel (frontend) + Render (server): set VITE_API_BASE on Vercel to your Render URL.

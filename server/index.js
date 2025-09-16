@@ -24,25 +24,13 @@ async function writeJSON(name, val){
   await fs.writeFile(file(name), JSON.stringify(val, null, 2))
 }
 
-// Seed data on first run
+// Clean seeds (empty for production)
 const seed = {
-  players: [
-    { id: 1, name: 'Jamal Greene', age: 17, shooting: true, team: true },
-    { id: 2, name: 'Tyler Brooks', age: 16, shooting: true, team: false },
-    { id: 3, name: 'Marcus Lee', age: 18, shooting: false, team: true },
-  ],
-  shooting: [
-    { id: 1, name: 'Jamal Greene', score: 12, time: '01:05' },
-    { id: 2, name: 'Tyler Brooks', score: 10, time: '01:12' }
-  ],
+  players: [],
+  shooting: [],
   teams: { A: [], B: [] },
-  tickets: [
-    { id: 1, name: 'Ava Johnson', quantity: 3 },
-    { id: 2, name: 'Chris Miller', quantity: 2 }
-  ],
-  messages: [
-    { id: 1, name: 'Coach D', text: 'Happy Birthday, Ocie! 🥳 Keep ballin’!', reactions: {'🎉': 2, '👍': 1} }
-  ]
+  tickets: [],
+  messages: []
 }
 
 app.get('/api/health', (_req,res)=>res.json({ok:true}))
@@ -56,7 +44,6 @@ app.post('/api/register', async (req,res)=>{
   const player = { id, name, age, shooting: !!shooting, team: !!team }
   players.push(player)
   await writeJSON('players.json', players)
-  // if shooting, also add to shooting list with defaults
   if(shooting){
     const shootingList = await readJSON('shooting.json', seed.shooting)
     shootingList.push({ id, name, score: 0, time:'00:00' })
@@ -67,7 +54,6 @@ app.post('/api/register', async (req,res)=>{
 
 app.get('/api/shooting', async (_req,res)=>{
   const list = await readJSON('shooting.json', seed.shooting)
-  // sort by score desc then time asc
   const sorted = [...list].sort((a,b)=> (b.score||0)-(a.score||0) || (a.time||'99:99').localeCompare(b.time||'99:99'))
   res.json(sorted)
 })

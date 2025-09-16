@@ -1,109 +1,96 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-const API = __API_BASE__ || ''
-const PASS = 'ocie2025'
-
-function mmssToSecs(s){ const [m='0',sec='0']=String(s).split(':'); return (+m)*60+(+sec) }
-function secsToMMSS(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0') }
+import React, { useEffect, useState } from 'react'
+import api from '../lib/api'
 
 export default function Admin(){
-  const [ok, setOk] = useState(false)
-  const [shooters, setShooters] = useState([])
+  const [pass, setPass] = useState('')
+  const [authed, setAuthed] = useState(false)
+  const [shooting, setShooting] = useState([])
+  const [teams, setTeams] = useState({A:[], B:[]})
   const [tickets, setTickets] = useState([])
-  const [teams, setTeams] = useState({A:[],B:[]})
-  const [totalTix, setTotalTix] = useState(0)
 
-  async function loadAll(){
-    const s = await axios.get(`${API}/api/shooting`); setShooters(s.data||[])
-    const t = await axios.get(`${API}/api/tickets`); setTickets(t.data||[]); setTotalTix((t.data||[]).reduce((a,b)=>a+Number(b.quantity||0),0))
-    const tm = await axios.get(`${API}/api/teams`); setTeams(tm.data||{A:[],B:[]})
+  const load = async ()=>{
+    const s = await api.get('/api/shooting'); setShooting(s.data||[])
+    const t = await api.get('/api/teams'); setTeams(t.data||{A:[],B:[]})
+    const tk = await api.get('/api/tickets'); setTickets(tk.data||[])
+  }
+  useEffect(()=>{ if(authed) load() }, [authed])
+
+  const saveScore = async (id, score, time)=>{
+    await api.patch(`/api/shooting/${id}`, { score:Number(score||0), time })
+    load()
+  }
+  const autoTeams = async ()=>{
+    await api.post('/api/teams/auto', {}, { headers:{'x-admin-pass':pass} })
+    load()
+  }
+  const resetAll = async ()=>{
+    await api.post('/api/reset', {}, { headers:{'x-admin-pass':pass} })
+    load()
   }
 
-  useEffect(()=>{ if(ok) loadAll() },[ok])
-
-  async function saveScore(id, score, time){
-    await axios.patch(`${API}/api/shooting/${id}`, { score:Number(score), time })
-    loadAll()
-  }
-
-  async function autoAssign(){
-    await axios.post(`${API}/api/teams/auto`, {}, { headers: {'x-admin-pass': PASS} })
-    loadAll()
-  }
-
-  async function clearData(){
-    await axios.post(`${API}/api/reset`, {}, { headers: {'x-admin-pass': PASS} })
-    loadAll()
-  }
-
-  if(!ok){
+  if(!authed){
     return (
-      <div className="max-w-md mx-auto p-6">
-        <h2 className="h2 mb-4">Admin Login</h2>
-        <button className="btn w-full" onClick={()=>{
-          const p = prompt('Enter password')
-          if(p===PASS) setOk(true)
-          else alert('Wrong password')
-        }}>Enter</button>
-      </div>
+      <section className="max-w-md mx-auto px-4 py-10">
+        <h3 className="text-2xl font-bold text-purple-400 mb-4">Admin Login</h3>
+        <form onSubmit={(e)=>{e.preventDefault(); setAuthed(true)}} className="space-y-3">
+          <input type="password" className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)} />
+          <button className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded font-semibold">Enter</button>
+        </form>
+      </section>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
-      <section className="card">
-        <div className="flex items-center justify-between">
-          <h3 className="h2">Shooting Contest — Input Scores</h3>
+    <section className="max-w-6xl mx-auto px-4 py-10 space-y-8">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-bold text-purple-400">Admin Dashboard</h3>
+        <div className="flex gap-2">
+          <button onClick={autoTeams} className="bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded text-sm">Auto-Assign Teams</button>
+          <button onClick={resetAll} className="bg-red-700 hover:bg-red-600 px-3 py-2 rounded text-sm">Reset All Data</button>
         </div>
-        <div className="overflow-x-auto mt-4">
-          <table className="table">
-            <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
-            <tbody>
-              {shooters.map(p=>{
-                const [m,s]=String(p.time||'00:00').split(':')
-                return (
-                <tr key={p.id} className="border-t border-white/5">
-                  <td>{p.name}</td>
-                  <td><input defaultValue={p.score||0} type="number" min="0" className="input w-24" id={`score-${p.id}`}/></td>
-                  <td className="flex items-center gap-2">
-                    <input defaultValue={m||'00'} type="number" min="0" className="input w-20" id={`m-${p.id}`}/>
-                    :
-                    <input defaultValue={s||'00'} type="number" min="0" max="59" className="input w-20" id={`s-${p.id}`}/>
-                  </td>
-                  <td><button className="btn" onClick={()=>{
-                    const score = document.getElementById(`score-${p.id}`).value
-                    const mm = document.getElementById(`m-${p.id}`).value.padStart(2,'0')
-                    const ss = document.getElementById(`s-${p.id}`).value.padStart(2,'0')
-                    saveScore(p.id, score, `${mm}:${ss}`)
-                  }}>Save</button></td>
-                </tr>
-              )})}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      </div>
 
-      <section className="card">
-        <div className="flex items-center justify-between">
-          <h3 className="h2">Team Tournament — Manage Teams</h3>
-          <button className="btn" onClick={autoAssign}>Auto-Assign Teams</button>
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-neutral-900/60 border border-neutral-700 rounded p-4">
+          <h4 className="font-semibold mb-2 text-neutral-200">Shooting Contest</h4>
+          <p className="text-xs text-neutral-400 mb-3">Update score and time (mm:ss). Leaderboard reorders automatically.</p>
+          <ul className="space-y-2">
+            {shooting.map(p=>(
+              <li key={p.id} className="text-sm flex items-center gap-2">
+                <span className="w-40">{p.name}</span>
+                <input placeholder="Score" className="w-20 bg-neutral-800 border border-neutral-700 rounded px-2 py-1" defaultValue={p.score} onBlur={e=>saveScore(p.id, e.target.value, p.time)} />
+                <input placeholder="mm:ss" className="w-24 bg-neutral-800 border border-neutral-700 rounded px-2 py-1" defaultValue={p.time} onBlur={e=>saveScore(p.id, p.score, e.target.value)} />
+              </li>
+            ))}
+            {shooting.length===0 && <li className="text-neutral-400 text-sm">No shooting contestants yet.</li>}
+          </ul>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div><div className="font-bold mb-2">Team A</div>{teams.A.map(p=>(<div key={p.id} className="py-1">{p.name}</div>))}</div>
-          <div><div className="font-bold mb-2">Team B</div>{teams.B.map(p=>(<div key={p.id} className="py-1">{p.name}</div>))}</div>
+
+        <div className="bg-neutral-900/60 border border-neutral-700 rounded p-4">
+          <h4 className="font-semibold mb-2 text-neutral-200">Teams</h4>
+          <div className="grid grid-cols-2 gap-6 text-sm">
+            <div>
+              <div className="text-purple-300 mb-1 font-semibold">Team A</div>
+              <ul className="space-y-1">{teams.A?.map(t=><li key={t.id}>{t.name}</li>)}</ul>
+            </div>
+            <div>
+              <div className="text-purple-300 mb-1 font-semibold">Team B</div>
+              <ul className="space-y-1">{teams.B?.map(t=><li key={t.id}>{t.name}</li>)}</ul>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <section className="card">
-        <h3 className="h2">Tickets — Requests</h3>
-        <div className="text-sm text-gray-400 mb-2">Total requested: {totalTix}</div>
-        {tickets.map(t=>(<div key={t.id} className="border-t border-white/5 py-2">{t.name} — {t.quantity}</div>))}
-      </section>
-
-      <section className="card">
-        <h3 className="h2">Utilities</h3>
-        <button className="btn" onClick={clearData}>Remove Test Data</button>
-      </section>
-    </div>
+      <div className="bg-neutral-900/60 border border-neutral-700 rounded p-4">
+        <h4 className="font-semibold mb-2 text-neutral-200">Tickets</h4>
+        <div className="text-sm text-neutral-300">
+          Total Tickets: {tickets.reduce((s,r)=>s+Number(r.quantity||0),0)}
+        </div>
+        <ul className="mt-2 space-y-1 text-sm">
+          {tickets.map(t=>(<li key={t.id}>{t.name} • {t.quantity}</li>))}
+          {tickets.length===0 && <li className="text-neutral-400 text-sm">No ticket requests yet.</li>}
+        </ul>
+      </div>
+    </section>
   )
 }
