@@ -1,13 +1,20 @@
-export default function Home() {
+import { Link } from 'react-router-dom'
+
+export default function Home(){
   return (
-    <div style={{minHeight:"calc(100vh - 100px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#000",color:"#fff"}}>
-      <h1 style={{fontSize:"48px",color:"#8A2BE2",textShadow:"0 6px 18px rgba(138,43,226,0.35)"}}>Welcome to Ballin' with Ocie 13th Edition!</h1>
-      <p>Register for contests, buy tickets, and track live results.</p>
-      <div style={{marginTop:"1rem"}}>
-        <a href="/register" style={{margin:"0 1rem",color:"#8A2BE2"}}>Register to Play</a>
-        <a href="/tickets" style={{margin:"0 1rem",color:"#8A2BE2"}}>Get Tickets</a>
-        <a href="/leaderboard" style={{margin:"0 1rem",color:"#8A2BE2"}}>View Leaderboard</a>
+    <div className="min-h-[calc(100vh-200px)] grid place-items-center px-6">
+      <div className="text-center space-y-6">
+        <h1 className="h1">Welcome to Ballin’ with Ocie!</h1>
+        <p className="text-gray-300 max-w-2xl mx-auto">
+          Register for the Shooting Contest and Team Tournament, secure tickets, leave a birthday message, and track live scores & brackets.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link className="btn" to="/register">Register to Play</Link>
+          <Link className="btn" to="/tickets">Get Tickets</Link>
+          <Link className="btn" to="/leaderboard">View Leaderboard</Link>
+          <Link className="btn" to="/birthday-wall">Leave a Birthday Wish</Link>
+        </div>
       </div>
     </div>
-  );
+  )
 }

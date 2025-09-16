@@ -1,94 +1,109 @@
 import { useEffect, useState } from 'react'
-import { getJSON, postJSON } from '../api'
+import axios from 'axios'
+const API = __API_BASE__ || ''
+const PASS = 'ocie2025'
+
+function mmssToSecs(s){ const [m='0',sec='0']=String(s).split(':'); return (+m)*60+(+sec) }
+function secsToMMSS(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0') }
 
 export default function Admin(){
-  const [pass,setPass]=useState('')
-  const [ok,setOk]=useState(false)
-  const [players,setPlayers]=useState([])
-  const [tickets,setTickets]=useState([])
-  const [teams,setTeams]=useState([])
-  const [messages,setMessages]=useState([])
+  const [ok, setOk] = useState(false)
+  const [shooters, setShooters] = useState([])
+  const [tickets, setTickets] = useState([])
+  const [teams, setTeams] = useState({A:[],B:[]})
+  const [totalTix, setTotalTix] = useState(0)
 
-  useEffect(()=>{ (async()=>{
-    const [p,t,m] = await Promise.all([getJSON('/players'), getJSON('/tickets'), getJSON('/messages')])
-    setPlayers(p||[]); setTickets(t||[]); setMessages(m||[])
-  })() },[])
-
-  async function login(){ if(pass==='ocie2025') setOk(true) }
-
-  async function saveScore(p){
-    const res = await postJSON('/shooting/update',{ id:p.id, score:Number(p.score||0), time:p.time||'' })
-    setPlayers(res.players||players)
-  }
-  async function autoTeams(){
-    const res = await postJSON('/teams/autoassign',{}, {'x-admin-pass':'ocie2025'})
-    setTeams(res.teams||[])
-  }
-  async function resetData(){
-    const res = await postJSON('/reset',{}, {'x-admin-pass':'ocie2025'})
-    setPlayers(res.players); setTickets(res.tickets); setMessages(res.messages); setTeams(res.teams||[])
+  async function loadAll(){
+    const s = await axios.get(`${API}/api/shooting`); setShooters(s.data||[])
+    const t = await axios.get(`${API}/api/tickets`); setTickets(t.data||[]); setTotalTix((t.data||[]).reduce((a,b)=>a+Number(b.quantity||0),0))
+    const tm = await axios.get(`${API}/api/teams`); setTeams(tm.data||{A:[],B:[]})
   }
 
-  const totalTickets = tickets.reduce((a,b)=>a+(Number(b.count)||0),0)
+  useEffect(()=>{ if(ok) loadAll() },[ok])
+
+  async function saveScore(id, score, time){
+    await axios.patch(`${API}/api/shooting/${id}`, { score:Number(score), time })
+    loadAll()
+  }
+
+  async function autoAssign(){
+    await axios.post(`${API}/api/teams/auto`, {}, { headers: {'x-admin-pass': PASS} })
+    loadAll()
+  }
+
+  async function clearData(){
+    await axios.post(`${API}/api/reset`, {}, { headers: {'x-admin-pass': PASS} })
+    loadAll()
+  }
+
+  if(!ok){
+    return (
+      <div className="max-w-md mx-auto p-6">
+        <h2 className="h2 mb-4">Admin Login</h2>
+        <button className="btn w-full" onClick={()=>{
+          const p = prompt('Enter password')
+          if(p===PASS) setOk(true)
+          else alert('Wrong password')
+        }}>Enter</button>
+      </div>
+    )
+  }
 
   return (
-    <div className="container" style={{padding:'2rem 1rem'}}>
-      <h2>Admin Dashboard</h2>
-      {!ok && (
-        <div className="card row" style={{maxWidth:520}}>
-          <input className="input col" type="password" placeholder="Enter admin password" value={pass} onChange={e=>setPass(e.target.value)} />
-          <button className="btn" onClick={login}>Unlock</button>
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <section className="card">
+        <div className="flex items-center justify-between">
+          <h3 className="h2">Shooting Contest — Input Scores</h3>
         </div>
-      )}
-
-      <div className="grid" style={{gridTemplateColumns:'1fr', gap:'1rem'}}>
-        <section className="card">
-          <h3>Shooting Contest — Scores</h3>
-          <div className="small">Players auto-added from registration.</div>
+        <div className="overflow-x-auto mt-4">
           <table className="table">
-            <thead><tr><th>Name</th><th>Score</th><th>Time (MM:SS)</th><th></th></tr></thead>
+            <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
             <tbody>
-              {players.filter(p=>p.shooting).map(p=>(
-                <tr key={p.id}>
+              {shooters.map(p=>{
+                const [m,s]=String(p.time||'00:00').split(':')
+                return (
+                <tr key={p.id} className="border-t border-white/5">
                   <td>{p.name}</td>
-                  <td><input className="input" style={{maxWidth:90}} value={p.score??''} onChange={e=>setPlayers(pl=>pl.map(x=>x.id===p.id?{...x,score:e.target.value}:x))}/></td>
-                  <td><input className="input" style={{maxWidth:110}} placeholder="mm:ss" value={p.time??''} onChange={e=>setPlayers(pl=>pl.map(x=>x.id===p.id?{...x,time:e.target.value}:x))}/></td>
-                  <td><button className="btn" onClick={()=>saveScore(p)}>Save</button></td>
+                  <td><input defaultValue={p.score||0} type="number" min="0" className="input w-24" id={`score-${p.id}`}/></td>
+                  <td className="flex items-center gap-2">
+                    <input defaultValue={m||'00'} type="number" min="0" className="input w-20" id={`m-${p.id}`}/>
+                    :
+                    <input defaultValue={s||'00'} type="number" min="0" max="59" className="input w-20" id={`s-${p.id}`}/>
+                  </td>
+                  <td><button className="btn" onClick={()=>{
+                    const score = document.getElementById(`score-${p.id}`).value
+                    const mm = document.getElementById(`m-${p.id}`).value.padStart(2,'0')
+                    const ss = document.getElementById(`s-${p.id}`).value.padStart(2,'0')
+                    saveScore(p.id, score, `${mm}:${ss}`)
+                  }}>Save</button></td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
-        </section>
+        </div>
+      </section>
 
-        <section className="card">
-          <h3>Teams — Auto Assign</h3>
-          <button className="btn" onClick={autoTeams}>Auto Assign Teams</button>
-          <div className="row" style={{marginTop:'1rem'}}>
-            {teams.map((team,i)=>(
-              <div key={i} className="card" style={{minWidth:260}}>
-                <b>{team.name}</b>
-                <ul>{team.players.map(pl=>(<li key={pl.id}>{pl.name}</li>))}</ul>
-              </div>
-            ))}
-          </div>
-        </section>
+      <section className="card">
+        <div className="flex items-center justify-between">
+          <h3 className="h2">Team Tournament — Manage Teams</h3>
+          <button className="btn" onClick={autoAssign}>Auto-Assign Teams</button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div><div className="font-bold mb-2">Team A</div>{teams.A.map(p=>(<div key={p.id} className="py-1">{p.name}</div>))}</div>
+          <div><div className="font-bold mb-2">Team B</div>{teams.B.map(p=>(<div key={p.id} className="py-1">{p.name}</div>))}</div>
+        </div>
+      </section>
 
-        <section className="card">
-          <h3>Spectators — Tickets</h3>
-          <div className="tag">Total requested: {totalTickets}</div>
-          <table className="table">
-            <thead><tr><th>Name</th><th>Tickets</th></tr></thead>
-            <tbody>
-              {tickets.map((t,i)=>(<tr key={i}><td>{t.name}</td><td>{t.count}</td></tr>))}
-            </tbody>
-          </table>
-        </section>
+      <section className="card">
+        <h3 className="h2">Tickets — Requests</h3>
+        <div className="text-sm text-gray-400 mb-2">Total requested: {totalTix}</div>
+        {tickets.map(t=>(<div key={t.id} className="border-t border-white/5 py-2">{t.name} — {t.quantity}</div>))}
+      </section>
 
-        <section className="card">
-          <h3>Utilities</h3>
-          <button className="btn secondary" onClick={resetData}>Remove Test Data / Reset</button>
-        </section>
-      </div>
+      <section className="card">
+        <h3 className="h2">Utilities</h3>
+        <button className="btn" onClick={clearData}>Remove Test Data</button>
+      </section>
     </div>
   )
 }
