@@ -1,21 +1,14 @@
 import { useState } from 'react';
 const API = import.meta.env.VITE_API_BASE || '';
-
 export default function Register(){
   const [form, setForm] = useState({ name:'', age:'', events:{shooting:false, team:false} });
   const [ok, setOk] = useState('');
-
   const submit = async (e)=>{
     e.preventDefault();
-    const res = await fetch(`${API}/api/register`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(form)
-    });
+    const res = await fetch(`${API}/api/register`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) });
     setOk(res.ok ? '✅ Registered!' : '❌ Error');
     if(res.ok) setForm({ name:'', age:'', events:{shooting:false, team:false} });
   };
-
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
       <h2 className="text-3xl font-bold text-primary mb-6">Register as a Player</h2>

@@ -3,10 +3,16 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, { cors: { origin: '*'} });
+
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
@@ -18,6 +24,17 @@ const write = (name, data)=> fs.writeFileSync(file(name), JSON.stringify(data, n
 const ensure = (name, fallback)=> { if(!fs.existsSync(file(name))) write(name, fallback); return read(name); };
 const uid = (pfx) => pfx + Math.random().toString(36).slice(2,9);
 
+// naive profanity filter
+const BAD = ['damn','hell','shit','fuck'];
+const clean = (s='')=>{
+  let out = String(s);
+  BAD.forEach(b=>{
+    const re = new RegExp(b, 'ig');
+    out = out.replace(re, '***');
+  });
+  return out;
+};
+
 // seed files
 ensure('players.json', []);
 ensure('tickets.json', []);
@@ -28,10 +45,9 @@ ensure('messages.json', []);
 // ---- Registration ----
 app.post('/api/register', (req,res)=>{
   const players = read('players.json');
-  const p = { id: uid('reg_'), ...req.body };
+  const p = { id: uid('reg_'), name: clean(req.body.name), age: req.body.age, events: req.body.events||{} };
   players.push(p);
   write('players.json', players);
-
   if (p?.events?.shooting) {
     const contest = read('contest.json');
     if (!contest.find(s => s.name === p.name)) {
@@ -45,13 +61,13 @@ app.post('/api/register', (req,res)=>{
 // ---- Tickets ----
 app.post('/api/tickets', (req,res)=>{
   const tickets = read('tickets.json');
-  const t = { id: uid('tix_'), name: req.body.name, quantity: Number(req.body.quantity)||1 };
+  const t = { id: uid('tix_'), name: clean(req.body.name), quantity: Number(req.body.quantity)||1 };
   tickets.push(t);
   write('tickets.json', tickets);
   res.json({ ok:true, message:'Thank you! Your tickets will be available at the Box Office.' });
 });
 
-// ---- Messages (with replies + reactions) ----
+// ---- Messages (realtime, replies, reactions, moderation) ----
 app.get('/api/messages', (req,res)=> res.json(read('messages.json')) );
 
 app.post('/api/messages', (req,res)=>{
@@ -61,14 +77,14 @@ app.post('/api/messages', (req,res)=>{
     const m = messages.find(x=>x.id===parentId);
     if(!m) return res.status(404).json({ ok:false, error:'parent not found' });
     m.replies = m.replies || [];
-    m.replies.push({ id: uid('rep_'), name, text, reactions: {} });
+    m.replies.push({ id: uid('rep_'), name: clean(name), text: clean(text), reactions: {} });
     write('messages.json', messages);
-    return res.json({ ok:true });
   } else {
-    messages.push({ id: uid('msg_'), name, text, reactions: {}, replies: [] });
+    messages.push({ id: uid('msg_'), name: clean(name), text: clean(text), reactions: {}, replies: [] });
     write('messages.json', messages);
-    return res.json({ ok:true });
   }
+  io.emit('messages:update');
+  res.json({ ok:true });
 });
 
 app.patch('/api/messages/:id/react', (req,res)=>{
@@ -88,6 +104,25 @@ app.patch('/api/messages/:id/react', (req,res)=>{
     m.reactions[emoji] = (m.reactions[emoji]||0) + 1;
   }
   write('messages.json', messages);
+  io.emit('messages:update');
+  res.json({ ok:true });
+});
+
+app.delete('/api/messages/:id', (req,res)=>{
+  const { id } = req.params;
+  const { replyId } = req.body || {};
+  const messages = read('messages.json');
+  const idx = messages.findIndex(x=>x.id===id);
+  if(idx===-1) return res.status(404).json({ ok:false, error:'not found' });
+  if (replyId) {
+    const m = messages[idx];
+    m.replies = (m.replies||[]).filter(r=>r.id!==replyId);
+    write('messages.json', messages);
+  } else {
+    messages.splice(idx,1);
+    write('messages.json', messages);
+  }
+  io.emit('messages:update');
   res.json({ ok:true });
 });
 
@@ -139,6 +174,7 @@ app.post('/api/admin/reset', (req,res)=>{
   write('contest.json', []);
   write('teams.json', {});
   write('messages.json', []);
+  io.emit('messages:update');
   res.json({ ok:true });
 });
 
@@ -149,4 +185,10 @@ if (fs.existsSync(dist)) {
   app.get('*', (req,res)=> res.sendFile(path.join(dist, 'index.html')));
 }
 
-app.listen(PORT, ()=> console.log('Server running on', PORT));
+// socket.io basic log
+io.on('connection', (socket)=>{
+  console.log('client connected', socket.id);
+  socket.on('disconnect', ()=> console.log('client disconnected', socket.id));
+});
+
+httpServer.listen(PORT, ()=> console.log('Server running on', PORT));

@@ -1,28 +1,17 @@
 import { useState, useEffect } from 'react';
 const API = import.meta.env.VITE_API_BASE || '';
-
 export default function Tickets(){
   const [form, setForm] = useState({ name:'', quantity:1 });
   const [ok, setOk] = useState('');
   const [total, setTotal] = useState(0);
-
-  const loadTotal = async ()=>{
-    const r = await fetch(`${API}/api/admin/tickets/total`);
-    const d = await r.json(); setTotal(d.total||0);
-  };
+  const loadTotal = async ()=>{ const r = await fetch(`${API}/api/admin/tickets/total`); const d = await r.json(); setTotal(d.total||0); };
   useEffect(()=>{ loadTotal(); const id=setInterval(loadTotal, 5000); return ()=>clearInterval(id); }, []);
-
   const submit = async (e)=>{
     e.preventDefault();
-    const res = await fetch(`${API}/api/tickets`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(form)
-    });
+    const res = await fetch(`${API}/api/tickets`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) });
     setOk(res.ok ? '✅ Thank you! Your tickets will be available at the Box Office' : '❌ Error');
-    if(res.ok) { setForm({ name:'', quantity:1 }); loadTotal(); }
+    if(res.ok){ setForm({ name:'', quantity:1 }); loadTotal(); }
   };
-
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
       <h2 className="text-3xl font-bold text-primary mb-2">Get Tickets</h2>

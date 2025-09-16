@@ -103,16 +103,13 @@ export default function Admin(){
 
 function ShooterRow({ s, onSaved }){
   const [score, setScore] = useState(s.score||0);
-  const t = fromTotal(s.totalSeconds||0);
-  const [m, setM] = useState(t.mm);
-  const [sec, setSec] = useState(t.ss);
-
+  const m0 = Math.floor((s.totalSeconds||0)/60), s0=(s.totalSeconds||0)-m0*60;
+  const [m, setM] = useState(String(m0).padStart(2,'0'));
+  const [sec, setSec] = useState(String(s0).padStart(2,'0'));
   const save = async ()=>{
-    const total = parseMMSS(m, sec);
     await fetch(`${API}/api/admin/shooting/${s.id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ score:Number(score)||0, minutes:Number(m)||0, seconds:Number(sec)||0 }) });
     onSaved && onSaved();
   };
-
   return (
     <tr className="odd:bg-black/40 even:bg-black/20">
       <td className="px-3 py-2">{s.name}</td>
