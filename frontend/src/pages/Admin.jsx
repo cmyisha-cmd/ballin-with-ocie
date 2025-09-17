@@ -1,92 +1,99 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { api } from '../lib/api'
+
+import { useEffect, useState } from 'react'
+const API = '/api'
+const PASS = 'ocie2025'
 
 export default function Admin(){
-  const [admin, setAdmin] = useState('')
-  const [players, setPlayers] = useState([])
   const [shooting, setShooting] = useState([])
   const [tickets, setTickets] = useState([])
   const [teams, setTeams] = useState({A:[], B:[]})
-  const totalTickets = useMemo(()=> tickets.reduce((a,t)=>a+Number(t.quantity||0),0), [tickets])
+  const [players, setPlayers] = useState([])
 
   async function load(){
-    const [p, s, t, tm] = await Promise.all([
-      api('/players'), api('/shooting'), api('/tickets'), api('/teams')
+    const [s,t,tm,pl] = await Promise.all([
+      fetch(`${API}/shooting`).then(r=>r.json()),
+      fetch(`${API}/tickets`).then(r=>r.json()),
+      fetch(`${API}/teams`).then(r=>r.json()),
+      fetch(`${API}/players`).then(r=>r.json())
     ])
-    setPlayers(p); setShooting(s); setTickets(t); setTeams(tm)
+    setShooting(s); setTickets(t); setTeams(tm); setPlayers(pl)
   }
   useEffect(()=>{ load() }, [])
 
-  async function saveScore(id, score, time){
-    await api(`/shooting/${id}`, {method:'PATCH', body: JSON.stringify({score: Number(score||0), time})})
-    await load()
+  async function updateScore(id, score, time){
+    await fetch(`${API}/shooting/${id}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ score:Number(score||0), time })
+    })
+    load()
   }
+
   async function autoTeams(){
-    await api('/teams/auto', {method:'POST', headers:{'x-admin-pass': admin}})
-    await load()
+    await fetch(`${API}/teams/auto`, { method:'POST', headers:{'x-admin-pass': PASS} })
+    load()
   }
+
   async function reset(){
-    await api('/reset', {method:'POST', headers:{'x-admin-pass': admin}})
-    await load()
+    if(!confirm('Reset all data?')) return
+    await fetch(`${API}/reset`, { method:'POST', headers:{'x-admin-pass': PASS} })
+    load()
   }
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12 space-y-8">
-      <div className="card">
-        <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          <div><label>Admin Password</label><input type="password" value={admin} onChange={e=>setAdmin(e.target.value)} placeholder="••••••" /></div>
-          <button className="btn" onClick={autoTeams}>Auto-Assign Teams</button>
-          <button className="btn bg-red-600 hover:bg-red-500" onClick={reset}>Reset (clear data)</button>
+    <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
+      <div className="flex items-center justify-between">
+        <h2 className="h2">Admin Dashboard</h2>
+        <div className="flex gap-2">
+          <button className="btn" onClick={autoTeams}>Auto Assign Teams</button>
+          <button className="btn" onClick={reset}>Reset (Clear Data)</button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="card">
-          <h3 className="text-xl font-bold mb-3">Shooting Contest</h3>
-          <table>
-            <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
-            <tbody>
-              {shooting.map(p=>{
-                let scoreRef, timeRef
-                return (
-                  <tr key={p.id}>
-                    <td>{p.name}</td>
-                    <td><input defaultValue={p.score||0} ref={el=>scoreRef=el} className="w-20"/></td>
-                    <td><input defaultValue={p.time||'00:00'} ref={el=>timeRef=el} className="w-24"/></td>
-                    <td><button className="btn" onClick={()=>saveScore(p.id, scoreRef.value, timeRef.value)}>Save</button></td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+      <section className="card p-6">
+        <h3 className="font-bold mb-4">Shooting Contest</h3>
+        <div className="text-sm text-white/60 mb-2">Update score and time (MM:SS). Highest score, then lowest time wins.</div>
+        <div className="grid md:grid-cols-2 gap-3">
+          {shooting.map(p => (
+            <div key={p.id} className="bg-black/30 rounded-xl p-4 border border-white/10">
+              <div className="font-semibold">{p.name}</div>
+              <div className="mt-2 flex gap-2">
+                <input className="field" type="number" min="0" placeholder="Score" defaultValue={p.score||0} id={`s-${p.id}`} />
+                <input className="field" type="text" placeholder="MM:SS" defaultValue={p.time||'00:00'} id={`t-${p.id}`} />
+                <button className="btn" onClick={()=>{
+                  const s = document.getElementById(`s-${p.id}`).value
+                  const t = document.getElementById(`t-${p.id}`).value
+                  updateScore(p.id, s, t)
+                }}>Save</button>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="card">
-          <h3 className="text-xl font-bold mb-3">Teams</h3>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold text-nbaAccent mb-2">Team A</h4>
-              <ul className="space-y-1">{teams.A.map(m=><li key={m.id}>• {m.name}</li>)}</ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-nbaAccent mb-2">Team B</h4>
-              <ul className="space-y-1">{teams.B.map(m=><li key={m.id}>• {m.name}</li>)}</ul>
-            </div>
+      </section>
+
+      <section className="card p-6">
+        <h3 className="font-bold mb-4">Team Tournament</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <div className="font-semibold mb-2">Team A</div>
+            <ul className="space-y-1">{teams.A?.map(m=><li key={m.id} className="text-sm">{m.name}</li>)}</ul>
+          </div>
+          <div>
+            <div className="font-semibold mb-2">Team B</div>
+            <ul className="space-y-1">{teams.B?.map(m=><li key={m.id} className="text-sm">{m.name}</li>)}</ul>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="card">
-          <h3 className="text-xl font-bold mb-3">Players</h3>
-          <ul className="space-y-1">{players.map(p=><li key={p.id}>• {p.name} ({p.age}) {p.shooting?'· Shooting':''} {p.team?'· Team':''}</li>)}</ul>
-        </div>
-        <div className="card">
-          <h3 className="text-xl font-bold mb-3">Tickets</h3>
-          <p className="mb-2 text-zinc-300">Total Requested: <span className="font-bold text-white">{totalTickets}</span></p>
-          <ul className="space-y-1">{tickets.map(t=><li key={t.id}>• {t.name} — {t.quantity}</li>)}</ul>
-        </div>
-      </div>
-    </section>
+      <section className="card p-6">
+        <h3 className="font-bold mb-4">Tickets</h3>
+        <div className="text-sm text-white/70 mb-2">Total requested: {tickets.reduce((a,b)=>a + Number(b.quantity||0), 0)}</div>
+        <ul className="space-y-1">{tickets.map(t=><li key={t.id} className="text-sm">{t.name} — {t.quantity}</li>)}</ul>
+      </section>
+
+      <section className="card p-6">
+        <h3 className="font-bold mb-4">Registered Players</h3>
+        <ul className="space-y-1">{players.map(p=><li key={p.id} className="text-sm">{p.name} · age {p.age||'-'} · {p.shooting?'Shooting':''} {p.team?'Team':''}</li>)}</ul>
+      </section>
+    </div>
   )
 }

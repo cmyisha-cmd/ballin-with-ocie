@@ -1,52 +1,57 @@
-import React, { useState } from 'react'
-import { api } from '../lib/api'
+
+import { useState } from 'react'
+
+const API = '/api'
 
 export default function Register(){
-  const [form, setForm] = useState({name:'', age:'', shooting:true, team:true})
-  const [msg, setMsg] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [form, setForm] = useState({name:'', age:'', shooting:false, team:false})
+  const [status, setStatus] = useState(null)
 
   async function submit(e){
     e.preventDefault()
-    setBusy(true); setMsg('')
-    try {
-      await api('/register', {method:'POST', body: JSON.stringify({
-        name: form.name.trim(), age: Number(form.age||0), shooting: !!form.shooting, team: !!form.team
-      })})
-      setMsg('Registered! See you at the court.')
-      setForm({name:'', age:'', shooting:true, team:true})
-    } catch(err){
-      setMsg(err.message || 'Failed to register')
-    } finally { setBusy(false) }
+    setStatus(null)
+    const res = await fetch(`${API}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ 
+        name: form.name.trim(), 
+        age: Number(form.age||0), 
+        shooting: !!form.shooting, 
+        team: !!form.team 
+      })
+    })
+    if(res.ok){
+      setStatus('Registered! See you on the court.')
+      setForm({name:'', age:'', shooting:false, team:false})
+    } else {
+      const j = await res.json().catch(()=>({message:'Error'}))
+      setStatus(j.message || 'Error')
+    }
   }
 
   return (
-    <section className="max-w-xl mx-auto px-4 py-12">
-      <div className="card">
-        <h2 className="text-2xl font-bold mb-6">Register as a Player</h2>
-        {msg && <div className="mb-4 text-sm text-nbaAccent">{msg}</div>}
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label>Name</label>
-            <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required placeholder="Player full name" />
-          </div>
-          <div>
-            <label>Age</label>
-            <input type="number" value={form.age} onChange={e=>setForm({...form, age:e.target.value})} required min="5" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={form.shooting} onChange={e=>setForm({...form, shooting:e.target.checked})} />
-              Shooting Contest
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={form.team} onChange={e=>setForm({...form, team:e.target.checked})} />
-              Team Tournament
-            </label>
-          </div>
-          <button className="btn w-full" disabled={busy}>{busy ? 'Submitting…' : 'Submit Registration'}</button>
-        </form>
-      </div>
-    </section>
+    <div className="max-w-xl mx-auto px-4 py-10">
+      <h2 className="h2 mb-6">Player Registration</h2>
+      <form onSubmit={submit} className="card p-6 space-y-4">
+        <div>
+          <label className="label">Name</label>
+          <input className="field w-full" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+        </div>
+        <div>
+          <label className="label">Age</label>
+          <input type="number" min="0" className="field w-full" value={form.age} onChange={e=>setForm({...form, age:e.target.value})} />
+        </div>
+        <div className="flex items-center gap-3">
+          <input id="shoot" type="checkbox" checked={form.shooting} onChange={e=>setForm({...form, shooting:e.target.checked})} />
+          <label htmlFor="shoot">Shooting Contest</label>
+        </div>
+        <div className="flex items-center gap-3">
+          <input id="team" type="checkbox" checked={form.team} onChange={e=>setForm({...form, team:e.target.checked})} />
+          <label htmlFor="team">Team Tournament</label>
+        </div>
+        <button className="btn w-full">Submit</button>
+        {status && <div className="text-center text-sm text-white/80">{status}</div>}
+      </form>
+    </div>
   )
 }

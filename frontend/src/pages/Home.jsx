@@ -1,13 +1,19 @@
-export default function Home() {
+
+import { Link } from 'react-router-dom'
+
+export default function Home(){
   return (
-    <div style={{textAlign:'center',padding:'2rem',color:'#fff',background:'#000',minHeight:'80vh'}}>
-      <h2 style={{fontSize:'2.5rem',color:'#8A2BE2'}}>Welcome to Ballin' with Ocie!</h2>
-      <p>Join us for the ultimate basketball tournament experience. Register to play, grab tickets, or leave Ocie a birthday message!</p>
-      <div style={{marginTop:'2rem'}}>
-        <a href='/register'><button>Register to Play</button></a>
-        <a href='/tickets' style={{marginLeft:'1rem'}}><button>Get Tickets</button></a>
-        <a href='/messages' style={{marginLeft:'1rem'}}><button>Leave a Message</button></a>
+    <div className="max-w-5xl mx-auto px-4 py-16 text-center">
+      <h1 className="h1">Welcome to Ballin’ with Ocie!</h1>
+      <p className="mt-4 text-white/80 max-w-2xl mx-auto">
+        Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message.
+        Track scores and brackets during the event.
+      </p>
+      <div className="mt-8 flex flex-wrap gap-4 justify-center">
+        <Link to="/register" className="btn">Register to Play</Link>
+        <Link to="/tickets" className="btn">Get Tickets</Link>
+        <Link to="/birthday-wall" className="btn">Leave a Birthday Wish</Link>
       </div>
     </div>
-  );
+  )
 }
