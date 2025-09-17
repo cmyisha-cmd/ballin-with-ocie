@@ -1,109 +1,107 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-const API = __API_BASE__ || ''
-const PASS = 'ocie2025'
-
-function mmssToSecs(s){ const [m='0',sec='0']=String(s).split(':'); return (+m)*60+(+sec) }
-function secsToMMSS(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0') }
+import React, { useEffect, useState } from 'react'
 
 export default function Admin(){
+  const [pass, setPass] = useState('')
   const [ok, setOk] = useState(false)
-  const [shooters, setShooters] = useState([])
+
+  const [players, setPlayers] = useState([])
+  const [shooting, setShooting] = useState([])
   const [tickets, setTickets] = useState([])
-  const [teams, setTeams] = useState({A:[],B:[]})
-  const [totalTix, setTotalTix] = useState(0)
+  const [teams, setTeams] = useState({A:[], B:[]})
 
   async function loadAll(){
-    const s = await axios.get(`${API}/api/shooting`); setShooters(s.data||[])
-    const t = await axios.get(`${API}/api/tickets`); setTickets(t.data||[]); setTotalTix((t.data||[]).reduce((a,b)=>a+Number(b.quantity||0),0))
-    const tm = await axios.get(`${API}/api/teams`); setTeams(tm.data||{A:[],B:[]})
+    try{
+      const [p,s,t,tm] = await Promise.all([
+        fetch('/api/players').then(r=>r.json()),
+        fetch('/api/shooting').then(r=>r.json()),
+        fetch('/api/tickets').then(r=>r.json()),
+        fetch('/api/teams').then(r=>r.json())
+      ])
+      setPlayers(p||[]); setShooting(s||[]); setTickets(t||[]); setTeams(tm||{A:[],B:[]});
+    }catch{}
   }
-
-  useEffect(()=>{ if(ok) loadAll() },[ok])
+  useEffect(()=>{ if(ok){ loadAll(); const i=setInterval(loadAll, 8000); return ()=>clearInterval(i) } }, [ok])
 
   async function saveScore(id, score, time){
-    await axios.patch(`${API}/api/shooting/${id}`, { score:Number(score), time })
+    await fetch(`/api/shooting/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({score:Number(score||0), time}) })
     loadAll()
   }
-
-  async function autoAssign(){
-    await axios.post(`${API}/api/teams/auto`, {}, { headers: {'x-admin-pass': PASS} })
+  async function autoTeams(){
+    await fetch('/api/teams/auto', { method:'POST', headers:{ 'x-admin-pass': 'ocie2025' } })
     loadAll()
   }
-
-  async function clearData(){
-    await axios.post(`${API}/api/reset`, {}, { headers: {'x-admin-pass': PASS} })
+  async function resetData(){
+    if(!confirm('This will clear all data. Continue?')) return
+    await fetch('/api/reset', { method:'POST', headers:{ 'x-admin-pass': 'ocie2025' } })
     loadAll()
   }
 
   if(!ok){
     return (
-      <div className="max-w-md mx-auto p-6">
-        <h2 className="h2 mb-4">Admin Login</h2>
-        <button className="btn w-full" onClick={()=>{
-          const p = prompt('Enter password')
-          if(p===PASS) setOk(true)
-          else alert('Wrong password')
-        }}>Enter</button>
-      </div>
+      <section className="card" style={{margin:'28px 0'}}>
+        <h2>Admin Login</h2>
+        <form onSubmit={(e)=>{ e.preventDefault(); if(pass==='ocie2025') setOk(true); else alert('Wrong password') }}>
+          <input type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)} />
+          <div className="cta"><button className="btn">Login</button></div>
+        </form>
+      </section>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
-      <section className="card">
-        <div className="flex items-center justify-between">
-          <h3 className="h2">Shooting Contest — Input Scores</h3>
-        </div>
-        <div className="overflow-x-auto mt-4">
-          <table className="table">
-            <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
-            <tbody>
-              {shooters.map(p=>{
-                const [m,s]=String(p.time||'00:00').split(':')
-                return (
-                <tr key={p.id} className="border-t border-white/5">
+    <section className="grid" style={{margin:'28px 0'}}>
+      <div className="card">
+        <h3 style={{marginTop:0}}>Shooting Contest</h3>
+        <table>
+          <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
+          <tbody>
+            {shooting.map(p=>{
+              const [mm,ss] = String(p.time||'00:00').split(':')
+              return (
+                <tr key={p.id}>
                   <td>{p.name}</td>
-                  <td><input defaultValue={p.score||0} type="number" min="0" className="input w-24" id={`score-${p.id}`}/></td>
-                  <td className="flex items-center gap-2">
-                    <input defaultValue={m||'00'} type="number" min="0" className="input w-20" id={`m-${p.id}`}/>
-                    :
-                    <input defaultValue={s||'00'} type="number" min="0" max="59" className="input w-20" id={`s-${p.id}`}/>
+                  <td><input type="number" defaultValue={p.score||0} id={`s-${p.id}`} /></td>
+                  <td>
+                    <div style={{display:'flex', gap:6}}>
+                      <input style={{width:70}} defaultValue={mm||'00'} id={`m-${p.id}`} placeholder="mm" />
+                      <input style={{width:70}} defaultValue={ss||'00'} id={`x-${p.id}`} placeholder="ss" />
+                    </div>
                   </td>
-                  <td><button className="btn" onClick={()=>{
-                    const score = document.getElementById(`score-${p.id}`).value
-                    const mm = document.getElementById(`m-${p.id}`).value.padStart(2,'0')
-                    const ss = document.getElementById(`s-${p.id}`).value.padStart(2,'0')
-                    saveScore(p.id, score, `${mm}:${ss}`)
-                  }}>Save</button></td>
+                  <td>
+                    <button className="btn" onClick={()=>{
+                      const s = document.getElementById(`s-${p.id}`).value
+                      const m = document.getElementById(`m-${p.id}`).value.padStart(2,'0')
+                      const x = document.getElementById(`x-${p.id}`).value.padStart(2,'0')
+                      saveScore(p.id, s, `${m}:${x}`)
+                    }}>Save</button>
+                  </td>
                 </tr>
-              )})}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              )
+            })}
+            {shooting.length===0 && <tr><td colSpan="4" className="muted">No shooting entries yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
 
-      <section className="card">
-        <div className="flex items-center justify-between">
-          <h3 className="h2">Team Tournament — Manage Teams</h3>
-          <button className="btn" onClick={autoAssign}>Auto-Assign Teams</button>
+      <div className="card">
+        <h3 style={{marginTop:0}}>Teams</h3>
+        <div className="cta"><button className="btn" onClick={autoTeams}>Auto-Assign Teams</button></div>
+        <div className="grid" style={{marginTop:10}}>
+          <div><h4>Team A</h4><ul>{teams.A.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
+          <div><h4>Team B</h4><ul>{teams.B.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div><div className="font-bold mb-2">Team A</div>{teams.A.map(p=>(<div key={p.id} className="py-1">{p.name}</div>))}</div>
-          <div><div className="font-bold mb-2">Team B</div>{teams.B.map(p=>(<div key={p.id} className="py-1">{p.name}</div>))}</div>
-        </div>
-      </section>
+      </div>
 
-      <section className="card">
-        <h3 className="h2">Tickets — Requests</h3>
-        <div className="text-sm text-gray-400 mb-2">Total requested: {totalTix}</div>
-        {tickets.map(t=>(<div key={t.id} className="border-t border-white/5 py-2">{t.name} — {t.quantity}</div>))}
-      </section>
+      <div className="card">
+        <h3 style={{marginTop:0}}>Tickets</h3>
+        <p className="muted">Total requested: <strong>{(tickets||[]).reduce((a,b)=>a+Number(b.quantity||0),0)}</strong></p>
+        <ul>{tickets.map(t=><li key={t.id}>{t.name} — {t.quantity}</li>)}</ul>
+      </div>
 
-      <section className="card">
-        <h3 className="h2">Utilities</h3>
-        <button className="btn" onClick={clearData}>Remove Test Data</button>
-      </section>
-    </div>
+      <div className="card">
+        <h3 style={{marginTop:0}}>Danger Zone</h3>
+        <button className="btn danger" onClick={resetData}>Remove Test Data</button>
+      </div>
+    </section>
   )
 }

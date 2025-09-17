@@ -1,67 +1,114 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-const API = __API_BASE__ || ''
-const REACTS = ['👍','❤️','🎉','😂','🙌','👏','🔥','🥳']
+import React, { useEffect, useState } from 'react'
+
+const EMOJIS = ['🎉','🎂','🏀','🔥','👍','❤️','🙌']
 
 export default function BirthdayWall(){
   const [list, setList] = useState([])
-  const [name, setName] = useState('')
-  const [text, setText] = useState('')
-  const [emojiOpen, setEmojiOpen] = useState(false)
+  const [form, setForm] = useState({ name:'', text:'' })
+  const [admin, setAdmin] = useState(false)
+  const [adminPass, setAdminPass] = useState('')
 
-  async function load(){ const res = await axios.get(`${API}/api/messages`); setList(res.data||[]) }
-  useEffect(()=>{ load(); const id=setInterval(load, 5000); return ()=>clearInterval(id)},[])
+  async function load(){ try{ const r=await fetch('/api/messages'); setList(await r.json()) }catch{} }
+  useEffect(()=>{ load(); const t=setInterval(load, 8000); return ()=>clearInterval(t) }, [])
 
-  async function postMessage(e){
+  async function post(e){
     e.preventDefault()
-    if(!name || !text) return
-    await axios.post(`${API}/api/messages`, { name, text })
-    setName(''); setText(''); load()
+    if(!form.name || !form.text) return
+    await fetch('/api/messages', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) })
+    setForm({ name:'', text:'' })
+    load()
   }
-
   async function react(id, emoji){
-    await axios.post(`${API}/api/messages/${id}/react`, { emoji })
+    await fetch(`/api/messages/${id}/react`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({emoji}) })
+    load()
+  }
+  async function reply(id, name, text){
+    if(!name || !text) return
+    await fetch(`/api/messages/${id}/reply`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, text}) })
+    load()
+  }
+  async function del(id){
+    if(!admin) return
+    await fetch(`/api/messages/${id}`, { method:'DELETE', headers:{ 'x-admin-pass': 'ocie2025' } })
     load()
   }
 
-  return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="h2 mb-4">Birthday Wall</h2>
-      <form onSubmit={postMessage} className="card space-y-3">
-        <div>
-          <label className="label">Your Name</label>
-          <input className="input w-full" value={name} onChange={e=>setName(e.target.value)} required />
-        </div>
-        <div>
-          <label className="label">Message</label>
-          <div className="relative">
-            <textarea className="input w-full h-32" value={text} onChange={e=>setText(e.target.value)} />
-            <button type="button" onClick={()=>setEmojiOpen(v=>!v)} className="absolute right-2 bottom-2 btn px-3 py-1">😀</button>
-            {emojiOpen && (
-              <div className="absolute right-0 bottom-12 bg-zinc-800 border border-white/10 rounded-xl p-2 grid grid-cols-8 gap-1">
-                {REACTS.map(e => <button key={e} type="button" onClick={()=>{setText(t=>t+e); setEmojiOpen(false)}} className="px-2 py-1 hover:bg-zinc-700 rounded">{e}</button>)}
-              </div>
-            )}
-          </div>
-        </div>
-        <button className="btn w-full">Post Message 🎉</button>
+  function AdminBox(){
+    if(admin) return <div className="pill">Admin mode</div>
+    return (
+      <form onSubmit={(e)=>{ e.preventDefault(); if(adminPass==='ocie2025') setAdmin(true); else alert('Wrong password'); }} style={{display:'flex', gap:8, alignItems:'center'}}>
+        <input placeholder="Admin password" type="password" value={adminPass} onChange={e=>setAdminPass(e.target.value)} />
+        <button className="btn" type="submit">Login</button>
       </form>
+    )
+  }
 
-      <div className="mt-6 space-y-3">
-        {list.map(m => (
-          <div key={m.id} className="card">
-            <div className="font-semibold">{m.name}</div>
-            <div className="mt-1 whitespace-pre-wrap">{m.text}</div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {REACTS.map(e => (
-                <button key={e} onClick={()=>react(m.id, e)} className="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700">
-                  {e} <span className="text-xs text-gray-300">{m.reactions?.[e]||0}</span>
+  return (
+    <section style={{margin:'28px 0'}}>
+      <div className="card" style={{marginBottom:16}}>
+        <h2 style={{marginTop:0}}>Birthday Wall 🎉</h2>
+        <form onSubmit={post}>
+          <label>Your Name</label>
+          <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+          <label>Message</label>
+          <textarea value={form.text} onChange={e=>setForm({...form, text:e.target.value})} required placeholder="Type your message, add emojis below…" />
+          <div className="emoji-row" style={{marginTop:8}}>
+            {EMOJIS.map(e=>(<button key={e} type="button" onClick={()=>setForm({...form, text: form.text + e})}>{e}</button>))}
+          </div>
+          <div className="cta">
+            <button className="btn" type="submit">Post Message</button>
+          </div>
+        </form>
+      </div>
+
+      <div className="card" style={{marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <h3 style={{margin:0}}>Messages</h3>
+        <AdminBox />
+      </div>
+
+      <div className="grid">
+        {list.map(msg=> (
+          <div key={msg.id} className="card">
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+              <strong>{msg.name}</strong>
+              {admin && <button className="btn danger" onClick={()=>del(msg.id)}>Delete</button>}
+            </div>
+            <p style={{margin:'8px 0 10px'}}>{msg.text}</p>
+            <div className="emoji-row">
+              {EMOJIS.map(e=>(
+                <button key={e} type="button" onClick={()=>react(msg.id, e)}>
+                  {e} {msg.reactions?.[e]||0}
                 </button>
               ))}
             </div>
+            <div style={{marginTop:10}}>
+              <strong>Replies</strong>
+              <ul>
+                {(msg.replies||[]).map(r=>(<li key={r.id}><span className="pill">{r.name}</span> {r.text}</li>))}
+                {(msg.replies||[]).length===0 && <li className="muted">No replies yet</li>}
+              </ul>
+              <ReplyForm onSubmit={(name,text)=>reply(msg.id,name,text)} />
+            </div>
           </div>
         ))}
+        {list.length===0 && <div className="muted">No messages yet. Be the first to post!</div>}
       </div>
-    </div>
+    </section>
+  )
+}
+
+function ReplyForm({onSubmit}){
+  const [name,setName]=useState(''), [text,setText]=useState('')
+  return (
+    <form onSubmit={(e)=>{e.preventDefault(); onSubmit(name,text); setName(''); setText('')}} style={{marginTop:8}}>
+      <div className="grid">
+        <input placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} required />
+        <input placeholder="Reply…" value={text} onChange={e=>setText(e.target.value)} required />
+      </div>
+      <div className="emoji-row" style={{marginTop:8}}>
+        {['🎉','❤️','🙌','👍','🏀'].map(e=>(<button key={e} type="button" onClick={()=>setText(text + e)}>{e}</button>))}
+      </div>
+      <div className="cta"><button className="btn" type="submit">Reply</button></div>
+    </form>
   )
 }
