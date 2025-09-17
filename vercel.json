@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build:all",
+  "installCommand": "npm install --prefix ./frontend && npm install --prefix ./server",
+  "buildCommand": "npm run build --prefix ./frontend",
   "outputDirectory": "frontend/dist",
-  "installCommand": "npm install && npm install --prefix server",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/" }
