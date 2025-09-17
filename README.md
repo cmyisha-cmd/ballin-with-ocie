@@ -1,15 +1,15 @@
 # Ballin' with Ocie — Production
 - Frontend: React + Vite + Tailwind
-- Backend: Express (file persistence in /server/data)
-- No sample data preloaded.
-- Admin password: ocie2025 (Birthday Wall delete, Admin actions, Reset)
-
-## Docker (single service)
-docker build -t bwo .
-docker run -p 4000:4000 bwo
+- Backend: Express + JSON storage (no sample data)
+- Admin password: `ocie2025`
 
 ## Local dev
-# terminal A (server)
-cd server && npm install && npm start
-# terminal B (frontend)
-cd frontend && npm install && npm run dev
+- Terminal 1: `cd server && npm install && npm start` (port 4000)
+- Terminal 2: `cd frontend && npm install && npm run dev` (Vite dev on 5173)
+
+## Single-container deploy (Render or Docker)
+- Build with the included Dockerfile. Serves API at `/api` and static frontend.
+
+## Vercel + Render
+- Deploy server to Render at `https://ballin-with-ocie.onrender.com`
+- Deploy `frontend/` to Vercel; `vercel.json` rewrites `/api/*` to Render.

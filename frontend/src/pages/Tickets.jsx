@@ -1,35 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { api } from '../lib/api'
 
 export default function Tickets(){
-  const [name, setName] = useState('')
-  const [qty, setQty] = useState(1)
-  const [msg, setMsg] = useState('')
-  const [list, setList] = useState([])
-  useEffect(()=>{ fetch('/api/tickets').then(r=>r.json()).then(setList) },[])
+  const [name,setName] = useState('')
+  const [qty,setQty] = useState(1)
+  const [msg,setMsg] = useState('')
+
   async function submit(e){
     e.preventDefault()
-    const r = await fetch('/api/tickets',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, quantity:qty})})
-    const j = await r.json(); setMsg(j.message||'Submitted'); setName(''); setQty(1)
-    setList(await (await fetch('/api/tickets')).json())
+    setMsg('')
+    const res = await api('/tickets',{method:'POST', body:JSON.stringify({name, quantity: qty})})
+    setName(''); setQty(1);
+    setMsg(res.message || '✅ Thank you! Your tickets will be available at the Box Office.')
   }
+
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="card">
-        <h3 className="text-xl font-bold text-purple-400 mb-3">Get Tickets</h3>
-        <form onSubmit={submit} className="space-y-3">
-          <input className="w-full p-2 rounded text-black" placeholder="Your Name" value={name} onChange={e=>setName(e.target.value)}/>
-          <input className="w-full p-2 rounded text-black" type="number" min="1" value={qty} onChange={e=>setQty(Number(e.target.value))}/>
-          <button className="btn">Request</button>
-        </form>
-        {msg && <p className="text-green-400 mt-3">{msg}</p>}
-      </div>
-      <div className="card">
-        <h4 className="font-semibold text-purple-300 mb-2">Requests</h4>
-        <ul className="space-y-2 text-sm">
-          {list.map(t=>(<li key={t.id} className="flex justify-between"><span>{t.name}</span><span className="text-zinc-300">x{t.quantity}</span></li>))}
-        </ul>
-        <div className="mt-3 text-zinc-300 text-sm">Total tickets requested: <strong>{list.reduce((a,b)=>a+(b.quantity||0),0)}</strong></div>
-      </div>
+    <div className="card max-w-xl mx-auto">
+      <h2 className="text-primary mb-4">Get Spectator Tickets</h2>
+      <form onSubmit={submit} className="space-y-4">
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your Name" required className="w-full px-3 py-2 rounded bg-white/5 border border-white/10" />
+        <input value={qty} onChange={e=>setQty(e.target.value)} type="number" min="1" className="w-full px-3 py-2 rounded bg-white/5 border border-white/10" />
+        <button className="btn w-full">Request Tickets</button>
+      </form>
+      {msg && <p className="mt-4 text-green-400">{msg}</p>}
     </div>
   )
 }

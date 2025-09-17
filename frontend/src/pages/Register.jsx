@@ -1,39 +1,32 @@
 import { useState } from 'react'
+import { api } from '../lib/api'
 
 export default function Register(){
-  const [form, setForm] = useState({ name:'', age:'', shooting:false, team:false })
-  const [msg, setMsg] = useState('')
+  const [name,setName] = useState('')
+  const [age,setAge] = useState('')
+  const [shooting,setShooting] = useState(false)
+  const [team,setTeam] = useState(false)
+  const [done,setDone] = useState('')
+
   async function submit(e){
     e.preventDefault()
-    const r = await fetch('/api/register', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ ...form, age: Number(form.age||0) })
-    })
-    const j = await r.json()
-    setMsg(j.message || 'Submitted')
-    setForm({ name:'', age:'', shooting:false, team:false })
+    setDone('')
+    await api('/register',{method:'POST', body:JSON.stringify({name,age,shooting,team})})
+    setName(''); setAge(''); setShooting(false); setTeam(false);
+    setDone('✅ Registered! You’re all set.')
   }
+
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="card">
-        <h3 className="text-xl font-bold text-purple-400 mb-3">Register as a Player</h3>
-        <form onSubmit={submit} className="space-y-3">
-          <input className="w-full p-2 rounded text-black" placeholder="Full Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
-          <input className="w-full p-2 rounded text-black" placeholder="Age" type="number" value={form.age} onChange={e=>setForm(f=>({...f,age:e.target.value}))}/>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={form.shooting} onChange={e=>setForm(f=>({...f,shooting:e.target.checked}))}/> Shooting Contest</label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={form.team} onChange={e=>setForm(f=>({...f,team:e.target.checked}))}/> Team Tournament</label>
-          <button className="btn">Register</button>
-        </form>
-        {msg && <p className="text-green-400 mt-3">{msg}</p>}
-      </div>
-      <div className="card">
-        <h4 className="font-semibold mb-2 text-purple-300">Event Options</h4>
-        <ul className="list-disc ml-6 text-sm text-zinc-300">
-          <li>Shooting Contest: Highest score, fastest time wins (tie-breaker is least time, format mm:ss).</li>
-          <li>Team Tournament: Admin auto-assigns balanced teams; NBA-style bracket display.</li>
-        </ul>
-      </div>
+    <div className="card max-w-xl mx-auto">
+      <h2 className="text-primary mb-4">Register as a Player</h2>
+      <form onSubmit={submit} className="space-y-4">
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" required className="w-full px-3 py-2 rounded bg-white/5 border border-white/10" />
+        <input value={age} onChange={e=>setAge(e.target.value)} placeholder="Age" type="number" min="5" className="w-full px-3 py-2 rounded bg-white/5 border border-white/10" />
+        <label className="flex items-center gap-2"><input type="checkbox" checked={shooting} onChange={e=>setShooting(e.target.checked)} /> Shooting Contest</label>
+        <label className="flex items-center gap-2"><input type="checkbox" checked={team} onChange={e=>setTeam(e.target.checked)} /> Team Tournament</label>
+        <button className="btn w-full">Submit Registration</button>
+      </form>
+      {done && <p className="mt-4 text-green-400">{done}</p>}
     </div>
   )
 }

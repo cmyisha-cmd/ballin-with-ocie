@@ -1,16 +1,17 @@
-# Build frontend
-FROM node:18-alpine as build-frontend
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/vite.config.js frontend/tailwind.config.js frontend/postcss.config.cjs frontend/index.html ./
+# --- Build frontend ---
+FROM node:18-alpine AS build-frontend
+WORKDIR /app
+COPY frontend/package.json frontend/vite.config.js frontend/tailwind.config.cjs frontend/postcss.config.cjs frontend/index.html ./
 COPY frontend/src ./src
-RUN npm install && npm run build
+RUN npm install
+RUN npm run build
 
-# Final server image
+# --- Final server ---
 FROM node:18-alpine
 WORKDIR /app
+COPY server/package.json ./server/package.json
+RUN cd server && npm install
 COPY server ./server
-COPY --from=build-frontend /app/frontend/dist ./frontend/dist
-WORKDIR /app/server
-RUN npm install
+COPY --from=build-frontend /app/dist ./frontend/dist
 EXPOSE 4000
-CMD ["npm","start"]
+CMD ["node", "server/index.js"]
