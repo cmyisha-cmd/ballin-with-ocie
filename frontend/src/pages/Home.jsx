@@ -1,20 +1,15 @@
-import { Link } from 'react-router-dom'
-
-export default function Home(){
+import React from "react";
+import { Link } from "react-router-dom";
+export default function Home() {
   return (
-    <div className="min-h-[calc(100vh-200px)] grid place-items-center px-6">
-      <div className="text-center space-y-6">
-        <h1 className="h1">Welcome to Ballin’ with Ocie!</h1>
-        <p className="text-gray-300 max-w-2xl mx-auto">
-          Register for the Shooting Contest and Team Tournament, secure tickets, leave a birthday message, and track live scores & brackets.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link className="btn" to="/register">Register to Play</Link>
-          <Link className="btn" to="/tickets">Get Tickets</Link>
-          <Link className="btn" to="/leaderboard">View Leaderboard</Link>
-          <Link className="btn" to="/birthday-wall">Leave a Birthday Wish</Link>
-        </div>
+    <div style={{minHeight:"100vh", background:"#000", color:"#fff", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
+      <h1 style={{color:"#8A2BE2", fontSize:"48px"}}>Welcome to Ballin' with Ocie!</h1>
+      <div style={{marginTop:"20px", display:"flex", flexDirection:"column", gap:"10px"}}>
+        <Link to="/register"><button>Register to Play</button></Link>
+        <Link to="/tickets"><button>Get Tickets</button></Link>
+        <Link to="/wall"><button>Leave a Birthday Message</button></Link>
+        <Link to="/admin"><button>Admin Dashboard</button></Link>
       </div>
     </div>
-  )
+  );
 }
