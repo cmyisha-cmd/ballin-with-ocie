@@ -1,26 +1,15 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home.jsx';
-import Register from './pages/Register.jsx';
-import Tickets from './pages/Tickets.jsx';
-import Messages from './pages/Messages.jsx';
-import Admin from './pages/Admin.jsx';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <header style={{background:'#111',padding:'1rem',textAlign:'center',color:'#fff'}}>
-        <h1>Ballin' with Ocie 13th Edition</h1>
-        <nav>
-          <Link to="/">Home</Link> | <Link to="/register">Register</Link> | <Link to="/tickets">Tickets</Link> | <Link to="/messages">Birthday Wall</Link> | <Link to="/admin">Admin</Link>
-        </nav>
-      </header>
-      <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/tickets" element={<Tickets/>} />
-        <Route path="/messages" element={<Messages/>} />
-        <Route path="/admin" element={<Admin/>} />
-      </Routes>
-    </BrowserRouter>
+    <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center">
+      <h1 className="text-purple-500 text-4xl font-extrabold drop-shadow-lg">
+        Welcome to Ballin' with Ocie!
+      </h1>
+      <div className="flex gap-4 mt-6">
+        <button className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl shadow-lg">Register</button>
+        <button className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl shadow-lg">Get Tickets</button>
+        <button className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl shadow-lg">Leave a Message</button>
+      </div>
+    </div>
   );
 }

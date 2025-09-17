@@ -1,10 +1,9 @@
-version: '3.9'
+
+version: '3'
 services:
-  app:
+  bwo-app:
     build: .
     ports:
       - "4000:4000"
     volumes:
       - ./server/data:/app/server/data
-    environment:
-      - NODE_ENV=production
