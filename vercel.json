@@ -1,24 +1,9 @@
 {
-  // Tell Vercel to install both frontend and server dependencies
-  "installCommand": "npm install --prefix frontend && npm install --prefix server",
-
-  // Build frontend only (server is just Node)
-  "buildCommand": "npm run build --prefix frontend",
-
-  // Vercel should serve the built frontend dist folder
+  "buildCommand": "npm run build:all",
   "outputDirectory": "frontend/dist",
-
-  // Route API requests to the Node server
+  "installCommand": "npm install && npm install --prefix server",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/" }
-  ],
-
-  // Ensure Node server runs for API routes
-  "functions": {
-    "api/**": {
-      "runtime": "nodejs18.x",
-      "maxDuration": 30
-    }
-  }
+  ]
 }
