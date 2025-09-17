@@ -1,11 +1,14 @@
-const BASE = import.meta.env.VITE_API_BASE || '/api';
+const base = import.meta.env.VITE_API_BASE?.replace(/\/$/,'') || '/api'
 
 export async function api(path, opts={}){
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${base}${path}`, {
     headers: {'Content-Type':'application/json', ...(opts.headers||{})},
     ...opts
-  });
-  if(!res.ok) throw new Error(await res.text());
-  return res.headers.get('content-type')?.includes('application/json') ? res.json() : res.text();
+  })
+  if(!res.ok){
+    const t = await res.text().catch(()=>'');
+    throw new Error(t || res.statusText)
+  }
+  const ct = res.headers.get('content-type')||''
+  return ct.includes('application/json') ? res.json() : res.text()
 }
-export const setAdmin = (pass) => ({ 'x-admin-pass': pass });

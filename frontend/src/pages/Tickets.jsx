@@ -1,28 +1,42 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { api } from '../lib/api'
 
 export default function Tickets(){
-  const [name,setName] = useState('')
-  const [qty,setQty] = useState(1)
-  const [msg,setMsg] = useState('')
+  const [form, setForm] = useState({name:'', quantity:1})
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState(false)
 
   async function submit(e){
     e.preventDefault()
-    setMsg('')
-    const res = await api('/tickets',{method:'POST', body:JSON.stringify({name, quantity: qty})})
-    setName(''); setQty(1);
-    setMsg(res.message || '✅ Thank you! Your tickets will be available at the Box Office.')
+    setBusy(true); setMsg('')
+    try {
+      const res = await api('/tickets', {method:'POST', body: JSON.stringify({
+        name: form.name.trim(), quantity: Number(form.quantity||1)
+      })})
+      setMsg(res.message || 'Thank you! Your tickets will be available at the Box Office.')
+      setForm({name:'', quantity:1})
+    } catch(err){
+      setMsg(err.message || 'Failed to request tickets')
+    } finally { setBusy(false) }
   }
 
   return (
-    <div className="card max-w-xl mx-auto">
-      <h2 className="text-primary mb-4">Get Spectator Tickets</h2>
-      <form onSubmit={submit} className="space-y-4">
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your Name" required className="w-full px-3 py-2 rounded bg-white/5 border border-white/10" />
-        <input value={qty} onChange={e=>setQty(e.target.value)} type="number" min="1" className="w-full px-3 py-2 rounded bg-white/5 border border-white/10" />
-        <button className="btn w-full">Request Tickets</button>
-      </form>
-      {msg && <p className="mt-4 text-green-400">{msg}</p>}
-    </div>
+    <section className="max-w-xl mx-auto px-4 py-12">
+      <div className="card">
+        <h2 className="text-2xl font-bold mb-6">Get Tickets</h2>
+        {msg && <div className="mb-4 text-sm text-nbaAccent">{msg}</div>}
+        <form onSubmit={submit} className="space-y-4">
+          <div>
+            <label>Name</label>
+            <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required placeholder="Your full name" />
+          </div>
+          <div>
+            <label>Number of non-player tickets</label>
+            <input type="number" min="1" value={form.quantity} onChange={e=>setForm({...form, quantity:e.target.value})} />
+          </div>
+          <button className="btn w-full" disabled={busy}>{busy ? 'Submitting…' : 'Request Tickets'}</button>
+        </form>
+      </div>
+    </section>
   )
 }
