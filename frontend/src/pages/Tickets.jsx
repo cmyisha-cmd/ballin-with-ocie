@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Tickets() {
   const [buyer, setBuyer] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -9,7 +11,8 @@ export default function Tickets() {
     e.preventDefault();
     setMsg('');
     try {
-      const res = await fetch('https://ball-with-ocie.onrender.com/api/tickets', {
+      console.log("Submitting to:", `${API_URL}/api/tickets`);
+      const res = await fetch(`${API_URL}/api/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ buyer, quantity }),
@@ -23,6 +26,7 @@ export default function Tickets() {
         setMsg('❌ ' + (data.message || 'Failed'));
       }
     } catch (err) {
+      console.error("Tickets error:", err);
       setMsg('❌ Network error');
     }
   }
