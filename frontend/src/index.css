@@ -3,58 +3,118 @@
 @tailwind utilities;
 
 :root { color-scheme: dark; }
-body { @apply bg-black text-white font-body; }
-.nav { @apply bg-black/60 backdrop-blur sticky top-0 z-50 border-b border-white/10; }
-.btn { @apply bg-primary hover:bg-purple-700 text-white font-bold px-5 py-3 rounded-xl shadow; }
-.card { @apply bg-zinc-900/70 rounded-2xl shadow p-5 border border-white/5; }
-.h1 { @apply font-display text-5xl sm:text-6xl text-primary drop-shadow; }
-.h2 { @apply font-display text-3xl sm:text-4xl text-primary; }
-.label { @apply text-sm text-gray-300; }
-.input { @apply bg-white text-black rounded-lg px-4 py-2; }
-.select { @apply bg-white text-black rounded-lg px-4 py-2; }
-.table { @apply w-full text-left; }
-.table th, .table td { @apply px-3 py-2; }
 
-/* Desktop nav */
+body { 
+  @apply bg-black text-white font-body; 
+}
+
+.nav { 
+  @apply bg-black/60 backdrop-blur sticky top-0 z-50 border-b border-white/10; 
+}
+
+.btn { 
+  @apply bg-primary hover:bg-purple-700 text-white font-bold px-5 py-3 rounded-xl shadow; 
+}
+
+.card { 
+  @apply bg-zinc-900/70 rounded-2xl shadow p-5 border border-white/5; 
+}
+
+.h1 { 
+  @apply font-display text-5xl sm:text-6xl text-primary drop-shadow; 
+}
+
+.h2 { 
+  @apply font-display text-3xl sm:text-4xl text-primary; 
+}
+
+.label { 
+  @apply text-sm text-gray-300; 
+}
+
+.input { 
+  @apply bg-white text-black rounded-lg px-4 py-2; 
+}
+
+.select { 
+  @apply bg-white text-black rounded-lg px-4 py-2; 
+}
+
+.table { 
+  @apply w-full text-left; 
+}
+
+.table th, .table td { 
+  @apply px-3 py-2; 
+}
+
+/* ========================= */
+/* Desktop Navigation        */
+/* ========================= */
 nav {
   display: flex;
   gap: 16px;
 }
 
+nav a {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+}
+
 .menu-toggle {
   display: none;
-  font-size: 24px;
+  font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
+  z-index: 1100; /* always clickable above overlay */
 }
 
-/* Mobile nav: slide-in from right */
+/* ========================= */
+/* Mobile Navigation         */
+/* ========================= */
 @media (max-width: 768px) {
   nav {
+    display: none;              /* hidden by default */
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     position: fixed;
     top: 0;
-    right: -260px; /* hidden off-screen */
+    right: -260px;              /* slide-in from off-screen */
     height: 100%;
     width: 240px;
-    background: white;
-    color: black;
+    background: #111;           /* dark menu background */
+    color: white;
     padding: 20px;
     box-shadow: -4px 0 12px rgba(0,0,0,0.3);
     transition: right 0.3s ease;
     z-index: 1001;
-    border-left: 1px solid #ccc;
-  }
-  nav.open {
-    right: 0; /* slides in */
-  }
-  .menu-toggle {
-    display: block;
+    border-left: 1px solid rgba(255,255,255,0.1);
   }
 
-  /* Overlay behind the menu */
+  nav.open {
+    display: flex;
+    right: 0;                   /* slide in */
+  }
+
+  .menu-toggle {
+    display: block;             /* show hamburger on mobile */
+  }
+
+  nav a {
+    display: block;             /* full width clickable */
+    padding: 12px;
+    border-radius: 6px;
+    background: transparent;
+    transition: background 0.2s ease;
+  }
+
+  nav a:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* Overlay behind menu */
   .menu-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
