@@ -323,7 +323,7 @@ app.post('/api/reset', async (req, res) => {
 });
 
 // --- TEMPORARY: Run message table migration ---
-app.post('/api/migrate-messages', async (req, res) => {
+app.get('/api/migrate-messages', async (req, res) => {
   try {
     await q(`
       ALTER TABLE messages
