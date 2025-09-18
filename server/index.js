@@ -141,15 +141,14 @@ app.post('/api/tickets', async (req, res) => {
 // ----- Message Board -----
 app.get('/api/messages', async (_req, res) => {
   try {
-    const { rows } = await q(`SELECT * FROM messages ORDER BY created_at DESC`);
-    res.json(rows.map(r => ({
-      id: r.id,
-      name: r.author,
-      text: r.text,
-      created_at: r.created_at,
-      reactions: r.reactions || {},
-      replies: r.replies || []
-    })));
+    const { rows } = await q(`
+      SELECT id, author AS name, text, created_at,
+             COALESCE(reactions, '{}'::jsonb) AS reactions,
+             COALESCE(replies, '[]'::jsonb) AS replies
+      FROM messages
+      ORDER BY created_at DESC
+    `);
+    res.json(rows);
   } catch (err) {
     console.error('get messages error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -187,34 +186,37 @@ app.delete('/api/messages/:id', async (req, res) => {
   }
 });
 
+// ✅ Safer Reactions Route
 app.post('/api/messages/:id/react', async (req, res) => {
   try {
     const { id } = req.params;
     const { emoji } = req.body || {};
     if (!emoji) return res.status(400).json({ message: 'Emoji required' });
 
-    await q(`
+    const upd = await q(`
       UPDATE messages
       SET reactions = COALESCE(reactions, '{}'::jsonb) || 
-          jsonb_build_object($1, ((COALESCE(reactions->>$1,'0'))::int + 1))
+          jsonb_build_object($1, (COALESCE((reactions->>$1)::int, 0) + 1))
       WHERE id=$2
+      RETURNING reactions
     `, [emoji, id]);
 
-    res.json({ message: 'Reaction added' });
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    res.json({ reactions: upd.rows[0].reactions });
   } catch (err) {
     console.error('reaction error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
+// ✅ Safer Replies Route
 app.post('/api/messages/:id/reply', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, text } = req.body || {};
-    if (!name || !text) {
-      return res.status(400).json({ message: 'Name and text required' });
-    }
-    await q(`
+    if (!name || !text) return res.status(400).json({ message: 'Name and text required' });
+
+    const upd = await q(`
       UPDATE messages
       SET replies = COALESCE(replies, '[]'::jsonb) || jsonb_build_array(
         jsonb_build_object(
@@ -224,9 +226,11 @@ app.post('/api/messages/:id/reply', async (req, res) => {
         )
       )
       WHERE id=$3
+      RETURNING replies
     `, [name, text, id]);
 
-    res.json({ message: 'Reply added' });
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    res.json({ replies: upd.rows[0].replies });
   } catch (err) {
     console.error('reply error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -321,8 +325,6 @@ app.post('/api/reset', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
 
 // Start
 const PORT = process.env.PORT || 5000;
