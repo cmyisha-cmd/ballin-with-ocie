@@ -60,7 +60,7 @@ async function initDB() {
       text TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW(),
       reactions JSONB DEFAULT '{}'::jsonb,
-      replies JSONB DEFAULT '[]'::jsonb
+      replies JSONB   DEFAULT '[]'::jsonb
     );
   `);
 }
@@ -82,7 +82,7 @@ app.get('/', (_req, res) => {
 });
 
 // --- TEMP: Migration route (run once in browser) ---
-app.get('/api/migrate-messages', async (req, res) => {
+app.get('/api/migrate-messages', async (_req, res) => {
   try {
     await q(`
       ALTER TABLE messages
@@ -90,7 +90,7 @@ app.get('/api/migrate-messages', async (req, res) => {
         ADD COLUMN IF NOT EXISTS replies   JSONB DEFAULT '[]'::jsonb;
       UPDATE messages
         SET reactions = COALESCE(reactions, '{}'::jsonb),
-            replies   = COALESCE(replies,   '[]'::jsonb);
+            replies   = COALESCE(replies,   '[]'::jsonb)
     `);
     res.json({ message: "Messages table migrated ✅" });
   } catch (err) {
@@ -182,7 +182,7 @@ app.get('/api/messages', async (_req, res) => {
     const { rows } = await q(`
       SELECT id, author AS name, text, created_at,
              COALESCE(reactions, '{}'::jsonb) AS reactions,
-             COALESCE(replies, '[]'::jsonb) AS replies
+             COALESCE(replies, '[]'::jsonb)   AS replies
       FROM messages
       ORDER BY created_at DESC
     `);
@@ -216,7 +216,7 @@ app.delete('/api/messages/:id', async (req, res) => {
       return res.status(403).json({ message: 'Forbidden' });
     }
     const { id } = req.params;
-    await q(`DELETE FROM messages WHERE id=$1`, [id]);
+    await q(`DELETE FROM messages WHERE id=CAST($1 AS BIGINT)`, [id]);
     res.json({ message: 'Message deleted' });
   } catch (err) {
     console.error('delete message error:', err);
@@ -224,7 +224,7 @@ app.delete('/api/messages/:id', async (req, res) => {
   }
 });
 
-// ✅ Robust reactions route
+// ✅ Robust reactions route (cast id)
 app.post('/api/messages/:id/react', async (req, res) => {
   try {
     const { id } = req.params;
@@ -241,7 +241,7 @@ app.post('/api/messages/:id/react', async (req, res) => {
         to_jsonb( COALESCE((reactions->>$1)::int, 0) + 1 ),
         true
       )
-      WHERE id=$2
+      WHERE id = CAST($2 AS BIGINT)
       RETURNING reactions
     `, [emoji, id]);
 
@@ -253,7 +253,7 @@ app.post('/api/messages/:id/react', async (req, res) => {
   }
 });
 
-// ✅ Safer replies route
+// ✅ Safer replies route (cast id)
 app.post('/api/messages/:id/reply', async (req, res) => {
   try {
     const { id } = req.params;
@@ -271,7 +271,7 @@ app.post('/api/messages/:id/reply', async (req, res) => {
           'text', $2
         )
       )
-      WHERE id=$3
+      WHERE id = CAST($3 AS BIGINT)
       RETURNING replies
     `, [name, text, id]);
 
