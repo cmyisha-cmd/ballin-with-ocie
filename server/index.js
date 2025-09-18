@@ -81,18 +81,41 @@ app.get('/', (_req, res) => {
   res.send('Ballin with Ocie server (Postgres) is running 🚀');
 });
 
-// --- TEMPORARY: Migration route ---
+// --- TEMP: Migration route (run once in browser) ---
 app.get('/api/migrate-messages', async (req, res) => {
   try {
     await q(`
       ALTER TABLE messages
         ADD COLUMN IF NOT EXISTS reactions JSONB DEFAULT '{}'::jsonb,
-        ADD COLUMN IF NOT EXISTS replies JSONB DEFAULT '[]'::jsonb;
+        ADD COLUMN IF NOT EXISTS replies   JSONB DEFAULT '[]'::jsonb;
+      UPDATE messages
+        SET reactions = COALESCE(reactions, '{}'::jsonb),
+            replies   = COALESCE(replies,   '[]'::jsonb);
     `);
     res.json({ message: "Messages table migrated ✅" });
   } catch (err) {
     console.error("Migration error:", err);
     res.status(500).json({ message: "Migration failed" });
+  }
+});
+
+// --- Debug: inspect reactions/replies ---
+app.get('/api/debug/messages', async (_req, res) => {
+  try {
+    const { rows } = await q(`
+      SELECT id,
+             jsonb_typeof(reactions) AS reactions_type,
+             reactions,
+             jsonb_typeof(replies)   AS replies_type,
+             replies
+      FROM messages
+      ORDER BY id DESC
+      LIMIT 20
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('debug messages error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -201,17 +224,23 @@ app.delete('/api/messages/:id', async (req, res) => {
   }
 });
 
-// ✅ Safer Reactions Route
+// ✅ Robust reactions route
 app.post('/api/messages/:id/react', async (req, res) => {
   try {
     const { id } = req.params;
     const { emoji } = req.body || {};
+    console.log('[react]', { id, emoji });
+
     if (!emoji) return res.status(400).json({ message: 'Emoji required' });
 
     const upd = await q(`
       UPDATE messages
-      SET reactions = COALESCE(reactions, '{}'::jsonb) || 
-          jsonb_build_object($1, (COALESCE((reactions->>$1)::int, 0) + 1))
+      SET reactions = jsonb_set(
+        COALESCE(reactions, '{}'::jsonb),
+        ARRAY[$1],
+        to_jsonb( COALESCE((reactions->>$1)::int, 0) + 1 ),
+        true
+      )
       WHERE id=$2
       RETURNING reactions
     `, [emoji, id]);
@@ -224,18 +253,20 @@ app.post('/api/messages/:id/react', async (req, res) => {
   }
 });
 
-// ✅ Safer Replies Route
+// ✅ Safer replies route
 app.post('/api/messages/:id/reply', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, text } = req.body || {};
+    console.log('[reply]', { id, name, text });
+
     if (!name || !text) return res.status(400).json({ message: 'Name and text required' });
 
     const upd = await q(`
       UPDATE messages
       SET replies = COALESCE(replies, '[]'::jsonb) || jsonb_build_array(
         jsonb_build_object(
-          'id', EXTRACT(EPOCH FROM NOW())::bigint,
+          'id',   (EXTRACT(EPOCH FROM NOW())*1000)::bigint,
           'name', $1,
           'text', $2
         )
