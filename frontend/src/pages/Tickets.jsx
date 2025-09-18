@@ -33,18 +33,18 @@ export default function Tickets() {
 
   return (
     <section className="card" style={{ margin: '28px 0' }}>
-      <h2 style={{ marginTop: 0 }}>Buy Tickets</h2>
+      <h2 style={{ marginTop: 0 }}>Request Non-Player Spectator Tickets</h2>
       <form onSubmit={submit}>
         <label>Name</label>
         <input value={buyer} onChange={(e) => setBuyer(e.target.value)} />
-        <label>Quantity</label>
+        <label>Non-player Tickets</label>
         <input
           type="number"
           value={quantity}
           min="1"
           onChange={(e) => setQuantity(parseInt(e.target.value))}
         />
-        <button type="submit">Purchase</button>
+        <button type="submit">Request</button>
       </form>
       {msg && <p>{msg}</p>}
     </section>
