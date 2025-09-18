@@ -28,7 +28,7 @@ async function q(text, params = []) {
   }
 }
 
-// --- TEMP: verbose error helper (turn on with VERBOSE_ERRORS=1) ---
+// --- TEMP: verbose error helper ---
 const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1';
 function sendErr(res, err, fallback = 'Server error') {
   console.error(fallback, err);
@@ -86,12 +86,11 @@ const newId = () => Date.now();
 // ============== ROUTES ================
 // ======================================
 
-// Health
 app.get('/', (_req, res) => {
   res.send('Ballin with Ocie server (Postgres) is running 🚀');
 });
 
-// --- TEMP: Migration route (run once in browser) ---
+// --- TEMP: Migration route ---
 app.get('/api/migrate-messages', async (_req, res) => {
   try {
     await q(`
@@ -108,7 +107,7 @@ app.get('/api/migrate-messages', async (_req, res) => {
   }
 });
 
-// --- Debug: inspect reactions/replies JSON (remove after testing) ---
+// --- TEMP: Debug messages ---
 app.get('/api/debug/messages', async (_req, res) => {
   try {
     const { rows } = await q(`
@@ -124,6 +123,29 @@ app.get('/api/debug/messages', async (_req, res) => {
     res.json(rows);
   } catch (err) {
     return sendErr(res, err, 'Server error');
+  }
+});
+
+// --- TEMP: Test reply via GET (for mobile debugging) ---
+app.get('/api/test-reply/:id', async (req, res) => {
+  try {
+    const msgId = req.params.id;
+    const upd = await q(`
+      UPDATE messages
+      SET replies = COALESCE(replies, '[]'::jsonb) || jsonb_build_array(
+        jsonb_build_object(
+          'id', (EXTRACT(EPOCH FROM NOW())*1000)::bigint,
+          'name', 'tester',
+          'text', 'hello from test route'
+        )
+      )
+      WHERE id = CAST($1 AS BIGINT)
+      RETURNING replies
+    `, [msgId]);
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    res.json({ replies: upd.rows[0].replies });
+  } catch (err) {
+    return sendErr(res, err, 'Test reply failed');
   }
 });
 
@@ -214,6 +236,7 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
+// --- Delete message ---
 app.delete('/api/messages/:id', async (req, res) => {
   try {
     if (req.headers['x-admin-pass'] !== ADMIN_PASS) {
@@ -227,22 +250,12 @@ app.delete('/api/messages/:id', async (req, res) => {
   }
 });
 
-// ✅ Reactions (defensive, casts id, repairs bad types)
+// --- Reactions ---
 app.post('/api/messages/:id/react', async (req, res) => {
   try {
     const rawId = req.params.id;
     const { emoji } = req.body || {};
     if (!emoji) return res.status(400).json({ message: 'Emoji required' });
-
-    // Ensure row exists and JSON type is object
-    const pre = await q(
-      `SELECT id, jsonb_typeof(reactions) AS rtype FROM messages WHERE id = CAST($1 AS BIGINT)`,
-      [rawId]
-    );
-    if (pre.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
-    if (pre.rows[0].rtype && pre.rows[0].rtype !== 'object') {
-      await q(`UPDATE messages SET reactions = '{}'::jsonb WHERE id = CAST($1 AS BIGINT)`, [rawId]);
-    }
 
     const upd = await q(`
       UPDATE messages
@@ -256,29 +269,19 @@ app.post('/api/messages/:id/react', async (req, res) => {
       RETURNING reactions
     `, [emoji, rawId]);
 
-    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found (race?)' });
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
     res.json({ reactions: upd.rows[0].reactions });
   } catch (err) {
     return sendErr(res, err, 'Reaction failed');
   }
 });
 
-// ✅ Replies (defensive, casts id, repairs bad types)
+// --- Replies ---
 app.post('/api/messages/:id/reply', async (req, res) => {
   try {
     const rawId = req.params.id;
     const { name, text } = req.body || {};
     if (!name || !text) return res.status(400).json({ message: 'Name and text required' });
-
-    // Ensure row exists and JSON type is array
-    const pre = await q(
-      `SELECT id, jsonb_typeof(replies) AS rtype FROM messages WHERE id = CAST($1 AS BIGINT)`,
-      [rawId]
-    );
-    if (pre.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
-    if (pre.rows[0].rtype && pre.rows[0].rtype !== 'array') {
-      await q(`UPDATE messages SET replies = '[]'::jsonb WHERE id = CAST($1 AS BIGINT)`, [rawId]);
-    }
 
     const upd = await q(`
       UPDATE messages
@@ -293,7 +296,7 @@ app.post('/api/messages/:id/reply', async (req, res) => {
       RETURNING replies
     `, [name, text, rawId]);
 
-    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found (race?)' });
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
     res.json({ replies: upd.rows[0].replies });
   } catch (err) {
     return sendErr(res, err, 'Reply failed');
