@@ -1,10 +1,11 @@
-import React from 'react'
+import React from 'react' 
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import Tickets from './pages/Tickets'
 import BirthdayWall from './pages/BirthdayWall'
 import Admin from './pages/Admin'
+import Leaderboard from './pages/Leaderboard'   // ✅ import Leaderboard
 
 export default function App(){
   return (
@@ -23,6 +24,7 @@ export default function App(){
             <Link to="/register">Register</Link>
             <Link to="/tickets">Get Tickets</Link>
             <Link to="/birthday">Birthday Wall</Link>
+            <Link to="/leaderboard">Leaderboard</Link> {/* ✅ added link */}
             <Link to="/admin">Admin</Link>
           </nav>
         </div>
@@ -34,6 +36,7 @@ export default function App(){
           <Route path="/register" element={<Register/>} />
           <Route path="/tickets" element={<Tickets/>} />
           <Route path="/birthday" element={<BirthdayWall/>} />
+          <Route path="/leaderboard" element={<Leaderboard/>} /> {/* ✅ added route */}
           <Route path="/admin" element={<Admin/>} />
         </Routes>
       </main>
