@@ -28,6 +28,16 @@ async function q(text, params = []) {
   }
 }
 
+// --- TEMP: verbose error helper (turn on with VERBOSE_ERRORS=1) ---
+const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1';
+function sendErr(res, err, fallback = 'Server error') {
+  console.error(fallback, err);
+  if (VERBOSE_ERRORS) {
+    return res.status(500).json({ message: String(err?.message || err) });
+  }
+  return res.status(500).json({ message: fallback });
+}
+
 // --- Init DB ---
 async function initDB() {
   await q(`
@@ -60,7 +70,7 @@ async function initDB() {
       text TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW(),
       reactions JSONB DEFAULT '{}'::jsonb,
-      replies JSONB   DEFAULT '[]'::jsonb
+      replies   JSONB DEFAULT '[]'::jsonb
     );
   `);
 }
@@ -90,16 +100,15 @@ app.get('/api/migrate-messages', async (_req, res) => {
         ADD COLUMN IF NOT EXISTS replies   JSONB DEFAULT '[]'::jsonb;
       UPDATE messages
         SET reactions = COALESCE(reactions, '{}'::jsonb),
-            replies   = COALESCE(replies,   '[]'::jsonb)
+            replies   = COALESCE(replies,   '[]'::jsonb);
     `);
     res.json({ message: "Messages table migrated ✅" });
   } catch (err) {
-    console.error("Migration error:", err);
-    res.status(500).json({ message: "Migration failed" });
+    return sendErr(res, err, 'Migration failed');
   }
 });
 
-// --- Debug: inspect reactions/replies ---
+// --- Debug: inspect reactions/replies JSON (remove after testing) ---
 app.get('/api/debug/messages', async (_req, res) => {
   try {
     const { rows } = await q(`
@@ -114,8 +123,7 @@ app.get('/api/debug/messages', async (_req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error('debug messages error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -153,8 +161,7 @@ app.post('/api/register', async (req, res) => {
 
     res.json({ message: 'Registered successfully!' });
   } catch (err) {
-    console.error('register error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -171,8 +178,7 @@ app.post('/api/tickets', async (req, res) => {
     );
     res.json({ message: 'Tickets purchased successfully!' });
   } catch (err) {
-    console.error('tickets error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -188,8 +194,7 @@ app.get('/api/messages', async (_req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error('get messages error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -205,8 +210,7 @@ app.post('/api/messages', async (req, res) => {
     );
     res.json({ message: 'Message posted successfully!' });
   } catch (err) {
-    console.error('message error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -219,19 +223,26 @@ app.delete('/api/messages/:id', async (req, res) => {
     await q(`DELETE FROM messages WHERE id=CAST($1 AS BIGINT)`, [id]);
     res.json({ message: 'Message deleted' });
   } catch (err) {
-    console.error('delete message error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
-// ✅ Robust reactions route (cast id)
+// ✅ Reactions (defensive, casts id, repairs bad types)
 app.post('/api/messages/:id/react', async (req, res) => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
     const { emoji } = req.body || {};
-    console.log('[react]', { id, emoji });
-
     if (!emoji) return res.status(400).json({ message: 'Emoji required' });
+
+    // Ensure row exists and JSON type is object
+    const pre = await q(
+      `SELECT id, jsonb_typeof(reactions) AS rtype FROM messages WHERE id = CAST($1 AS BIGINT)`,
+      [rawId]
+    );
+    if (pre.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    if (pre.rows[0].rtype && pre.rows[0].rtype !== 'object') {
+      await q(`UPDATE messages SET reactions = '{}'::jsonb WHERE id = CAST($1 AS BIGINT)`, [rawId]);
+    }
 
     const upd = await q(`
       UPDATE messages
@@ -243,24 +254,31 @@ app.post('/api/messages/:id/react', async (req, res) => {
       )
       WHERE id = CAST($2 AS BIGINT)
       RETURNING reactions
-    `, [emoji, id]);
+    `, [emoji, rawId]);
 
-    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found (race?)' });
     res.json({ reactions: upd.rows[0].reactions });
   } catch (err) {
-    console.error('reaction error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Reaction failed');
   }
 });
 
-// ✅ Safer replies route (cast id)
+// ✅ Replies (defensive, casts id, repairs bad types)
 app.post('/api/messages/:id/reply', async (req, res) => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
     const { name, text } = req.body || {};
-    console.log('[reply]', { id, name, text });
-
     if (!name || !text) return res.status(400).json({ message: 'Name and text required' });
+
+    // Ensure row exists and JSON type is array
+    const pre = await q(
+      `SELECT id, jsonb_typeof(replies) AS rtype FROM messages WHERE id = CAST($1 AS BIGINT)`,
+      [rawId]
+    );
+    if (pre.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    if (pre.rows[0].rtype && pre.rows[0].rtype !== 'array') {
+      await q(`UPDATE messages SET replies = '[]'::jsonb WHERE id = CAST($1 AS BIGINT)`, [rawId]);
+    }
 
     const upd = await q(`
       UPDATE messages
@@ -273,13 +291,12 @@ app.post('/api/messages/:id/reply', async (req, res) => {
       )
       WHERE id = CAST($3 AS BIGINT)
       RETURNING replies
-    `, [name, text, id]);
+    `, [name, text, rawId]);
 
-    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found' });
+    if (upd.rowCount === 0) return res.status(404).json({ message: 'Message not found (race?)' });
     res.json({ replies: upd.rows[0].replies });
   } catch (err) {
-    console.error('reply error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Reply failed');
   }
 });
 
@@ -300,8 +317,7 @@ app.get('/api/shooting', async (_req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error('get shooting error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -311,9 +327,7 @@ app.patch('/api/shooting/:id', async (req, res) => {
     const { score, time } = req.body || {};
     const s = Number(score || 0);
     let t = '00:00';
-    if (time && /^\d{1,2}:\d{2}$/.test(time)) {
-      t = time;
-    }
+    if (time && /^\d{1,2}:\d{2}$/.test(time)) t = time;
     const upd = await q(
       `UPDATE players SET score=$1, time=$2 WHERE id=CAST($3 AS BIGINT) AND shooting=TRUE`,
       [s, t, id]
@@ -323,8 +337,7 @@ app.patch('/api/shooting/:id', async (req, res) => {
     }
     res.json({ message: 'Score updated' });
   } catch (err) {
-    console.error('patch shooting error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -336,8 +349,7 @@ app.get('/api/teams', async (_req, res) => {
     const B = rows.filter(r => r.team_group === 'B').map(r => ({ id: r.id, name: r.name }));
     res.json({ A, B });
   } catch (err) {
-    console.error('get teams error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -353,8 +365,7 @@ app.post('/api/teams/auto', async (req, res) => {
     }
     res.json({ message: 'Teams auto-assigned' });
   } catch (err) {
-    console.error('teams auto error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
@@ -367,8 +378,7 @@ app.post('/api/reset', async (req, res) => {
     await q(`TRUNCATE TABLE messages, tickets, players RESTART IDENTITY`);
     res.json({ message: 'All data cleared' });
   } catch (err) {
-    console.error('reset error:', err);
-    res.status(500).json({ message: 'Server error' });
+    return sendErr(res, err, 'Server error');
   }
 });
 
