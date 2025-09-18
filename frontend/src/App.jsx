@@ -43,6 +43,9 @@ export default function App(){
         </div>
       </header>
 
+      {/* ✅ Overlay for mobile menu */}
+      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
+
       <main className="wrap">
         <Routes>
           <Route path="/" element={<Home/>} />
