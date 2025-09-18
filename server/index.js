@@ -8,7 +8,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+
+// --- Explicit CORS setup (fix for Vercel/Render cross-domain) ---
+app.use(cors({
+  origin: [
+    'https://ocietourney.com',            // your custom domain
+    'https://www.ocietourney.com',        // www version
+    'https://ocie-tourney.vercel.app'     // Vercel preview domain
+  ],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
 
 const ADMIN_PASS = 'ocie2025';
@@ -68,33 +79,4 @@ app.post('/api/tickets', async (req, res) => {
 app.post('/api/message', async (req, res) => {
   const { author, text } = req.body;
   if (!author || !text) {
-    return res.status(400).json({ message: "Author and text required" });
-  }
-
-  const db = await readJSON('db.json', seed);
-  db.messages.push({ id: Date.now(), author, text });
-  await writeJSON('db.json', db);
-
-  res.json({ message: "Message posted successfully!" });
-});
-
-// --- Admin login (example) ---
-app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  if (password === ADMIN_PASS) {
-    res.json({ ok: true });
-  } else {
-    res.status(403).json({ ok: false, message: "Invalid password" });
-  }
-});
-
-// --- Default health check route ---
-app.get('/', (req, res) => {
-  res.send('Ballin with Ocie server is running 🚀');
-});
-
-// --- Start server ---
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    return res.status(400).json({ message: "Author and text required"
