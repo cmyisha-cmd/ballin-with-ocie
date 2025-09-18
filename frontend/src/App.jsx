@@ -1,13 +1,15 @@
-import React from 'react' 
+import React, { useState } from 'react' 
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import Tickets from './pages/Tickets'
 import BirthdayWall from './pages/BirthdayWall'
 import Admin from './pages/Admin'
-import Leaderboard from './pages/Leaderboard'   // ✅ import Leaderboard
+import Leaderboard from './pages/Leaderboard'
 
 export default function App(){
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <>
       <header>
@@ -19,13 +21,23 @@ export default function App(){
               <div style={{fontSize:18, letterSpacing:1}}>13th Edition</div>
             </div>
           </div>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/register">Register</Link>
-            <Link to="/tickets">Get Tickets</Link>
-            <Link to="/birthday">Birthday Wall</Link>
-            <Link to="/leaderboard">Leaderboard</Link> {/* ✅ added link */}
-            <Link to="/admin">Admin</Link>
+
+          {/* Hamburger button (mobile only) */}
+          <button 
+            className="menu-toggle" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            ☰
+          </button>
+
+          <nav className={menuOpen ? 'open' : ''}>
+            <Link to="/" onClick={()=>setMenuOpen(false)}>Home</Link>
+            <Link to="/register" onClick={()=>setMenuOpen(false)}>Register</Link>
+            <Link to="/tickets" onClick={()=>setMenuOpen(false)}>Get Tickets</Link>
+            <Link to="/birthday" onClick={()=>setMenuOpen(false)}>Birthday Wall</Link>
+            <Link to="/leaderboard" onClick={()=>setMenuOpen(false)}>Leaderboard</Link>
+            <Link to="/admin" onClick={()=>setMenuOpen(false)}>Admin</Link>
           </nav>
         </div>
       </header>
@@ -36,7 +48,7 @@ export default function App(){
           <Route path="/register" element={<Register/>} />
           <Route path="/tickets" element={<Tickets/>} />
           <Route path="/birthday" element={<BirthdayWall/>} />
-          <Route path="/leaderboard" element={<Leaderboard/>} /> {/* ✅ added route */}
+          <Route path="/leaderboard" element={<Leaderboard/>} />
           <Route path="/admin" element={<Admin/>} />
         </Routes>
       </main>
