@@ -59,8 +59,8 @@ async function initDB() {
       author TEXT NOT NULL,
       text TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW(),
-      reactions JSONB,
-      replies JSONB
+      reactions JSONB DEFAULT '{}'::jsonb,
+      replies JSONB DEFAULT '[]'::jsonb
     );
   `);
 }
@@ -79,6 +79,21 @@ const newId = () => Date.now();
 // Health
 app.get('/', (_req, res) => {
   res.send('Ballin with Ocie server (Postgres) is running 🚀');
+});
+
+// --- TEMPORARY: Migration route ---
+app.get('/api/migrate-messages', async (req, res) => {
+  try {
+    await q(`
+      ALTER TABLE messages
+        ADD COLUMN IF NOT EXISTS reactions JSONB DEFAULT '{}'::jsonb,
+        ADD COLUMN IF NOT EXISTS replies JSONB DEFAULT '[]'::jsonb;
+    `);
+    res.json({ message: "Messages table migrated ✅" });
+  } catch (err) {
+    console.error("Migration error:", err);
+    res.status(500).json({ message: "Migration failed" });
+  }
 });
 
 // ----- Registration -----
