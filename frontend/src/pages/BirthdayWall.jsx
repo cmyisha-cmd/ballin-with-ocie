@@ -1,43 +1,100 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 
-const EMOJIS = ['🎉','🎂','🏀','🔥','👍','❤️','🙌']
+const API_URL = import.meta.env.VITE_API_URL;
+const EMOJIS = ['🎉','🎂','🏀','🔥','👍','❤️','🙌'];
 
 export default function BirthdayWall(){
-  const [list, setList] = useState([])
-  const [form, setForm] = useState({ name:'', text:'' })
-  const [admin, setAdmin] = useState(false)
-  const [adminPass, setAdminPass] = useState('')
+  const [list, setList] = useState([]);
+  const [form, setForm] = useState({ name:'', text:'' });
+  const [admin, setAdmin] = useState(false);
+  const [adminPass, setAdminPass] = useState('');
 
-  async function load(){ try{ const r=await fetch('/api/messages'); setList(await r.json()) }catch{} }
-  useEffect(()=>{ load(); const t=setInterval(load, 8000); return ()=>clearInterval(t) }, [])
+  async function load(){ 
+    try { 
+      const r = await fetch(`${API_URL}/api/messages`); 
+      if (!r.ok) throw new Error("Failed to load messages");
+      setList(await r.json()); 
+    } catch(err) { 
+      console.error("load error:", err); 
+    } 
+  }
+
+  useEffect(()=>{ 
+    load(); 
+    const t=setInterval(load, 8000); 
+    return ()=>clearInterval(t); 
+  }, []);
 
   async function post(e){
-    e.preventDefault()
-    if(!form.name || !form.text) return
-    await fetch('/api/messages', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) })
-    setForm({ name:'', text:'' })
-    load()
+    e.preventDefault();
+    if(!form.name || !form.text) return;
+    try {
+      await fetch(`${API_URL}/api/messages`, { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify(form) 
+      });
+      setForm({ name:'', text:'' });
+      load();
+    } catch(err) {
+      console.error("post error:", err);
+    }
   }
+
   async function react(id, emoji){
-    await fetch(`/api/messages/${id}/react`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({emoji}) })
-    load()
+    try {
+      await fetch(`${API_URL}/api/messages/${id}/react`, { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({emoji}) 
+      });
+      load();
+    } catch(err) {
+      console.error("reaction error:", err);
+    }
   }
+
   async function reply(id, name, text){
-    if(!name || !text) return
-    await fetch(`/api/messages/${id}/reply`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, text}) })
-    load()
+    if(!name || !text) return;
+    try {
+      await fetch(`${API_URL}/api/messages/${id}/reply`, { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({name, text}) 
+      });
+      load();
+    } catch(err) {
+      console.error("reply error:", err);
+    }
   }
+
   async function del(id){
-    if(!admin) return
-    await fetch(`/api/messages/${id}`, { method:'DELETE', headers:{ 'x-admin-pass': 'ocie2025' } })
-    load()
+    if(!admin) return;
+    try {
+      await fetch(`${API_URL}/api/messages/${id}`, { 
+        method:'DELETE', 
+        headers:{ 'x-admin-pass': 'ocie2025' } 
+      });
+      load();
+    } catch(err) {
+      console.error("delete error:", err);
+    }
   }
 
   function AdminBox(){
     if(admin) return <div className="pill">Admin mode</div>
     return (
-      <form onSubmit={(e)=>{ e.preventDefault(); if(adminPass==='ocie2025') setAdmin(true); else alert('Wrong password'); }} style={{display:'flex', gap:8, alignItems:'center'}}>
-        <input placeholder="Admin password" type="password" value={adminPass} onChange={e=>setAdminPass(e.target.value)} />
+      <form onSubmit={(e)=>{ 
+        e.preventDefault(); 
+        if(adminPass==='ocie2025') setAdmin(true); 
+        else alert('Wrong password'); 
+      }} style={{display:'flex', gap:8, alignItems:'center'}}>
+        <input 
+          placeholder="Admin password" 
+          type="password" 
+          value={adminPass} 
+          onChange={e=>setAdminPass(e.target.value)} 
+        />
         <button className="btn" type="submit">Login</button>
       </form>
     )
@@ -49,9 +106,18 @@ export default function BirthdayWall(){
         <h2 style={{marginTop:0}}>Birthday Wall 🎉</h2>
         <form onSubmit={post}>
           <label>Your Name</label>
-          <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+          <input 
+            value={form.name} 
+            onChange={e=>setForm({...form, name:e.target.value})} 
+            required 
+          />
           <label>Message</label>
-          <textarea value={form.text} onChange={e=>setForm({...form, text:e.target.value})} required placeholder="Type your message, add emojis below…" />
+          <textarea 
+            value={form.text} 
+            onChange={e=>setForm({...form, text:e.target.value})} 
+            required 
+            placeholder="Type your message, add emojis below…" 
+          />
           <div className="emoji-row" style={{marginTop:8}}>
             {EMOJIS.map(e=>(<button key={e} type="button" onClick={()=>setForm({...form, text: form.text + e})}>{e}</button>))}
           </div>
@@ -98,7 +164,7 @@ export default function BirthdayWall(){
 }
 
 function ReplyForm({onSubmit}){
-  const [name,setName]=useState(''), [text,setText]=useState('')
+  const [name,setName]=useState(''), [text,setText]=useState('');
   return (
     <form onSubmit={(e)=>{e.preventDefault(); onSubmit(name,text); setName(''); setText('')}} style={{marginTop:8}}>
       <div className="grid">
