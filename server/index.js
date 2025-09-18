@@ -322,6 +322,21 @@ app.post('/api/reset', async (req, res) => {
   }
 });
 
+// --- TEMPORARY: Run message table migration ---
+app.post('/api/migrate-messages', async (req, res) => {
+  try {
+    await q(`
+      ALTER TABLE messages
+        ADD COLUMN IF NOT EXISTS reactions JSONB,
+        ADD COLUMN IF NOT EXISTS replies JSONB;
+    `);
+    res.json({ message: "Messages table migrated ✅" });
+  } catch (err) {
+    console.error("Migration error:", err);
+    res.status(500).json({ message: "Migration failed" });
+  }
+});
+
 // Start
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
