@@ -9,13 +9,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// --- Explicit CORS setup (for Vercel + custom domain) ---
+// --- Wide open CORS for testing (works with all Vercel preview URLs) ---
 app.use(cors({
-  origin: [
-    'https://ocietourney.com',
-    'https://www.ocietourney.com',
-    'https://ocie-tourney.vercel.app'
-  ],
+  origin: '*',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 }));
@@ -100,19 +96,16 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // --- GET routes for Admin Dashboard ---
-// Get all players
 app.get('/api/players', async (req, res) => {
   const db = await readJSON('db.json', seed);
   res.json(db.players || []);
 });
 
-// Get all tickets
 app.get('/api/tickets', async (req, res) => {
   const db = await readJSON('db.json', seed);
   res.json(db.tickets || []);
 });
 
-// Get all messages
 app.get('/api/messages', async (req, res) => {
   const db = await readJSON('db.json', seed);
   res.json(db.messages || []);
