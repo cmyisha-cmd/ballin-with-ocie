@@ -62,7 +62,7 @@ export default function Admin(){
   }
 
   async function resetData(){
-    if(!ok) return; // ✅ block if not logged in
+    if(!ok) return;
     if(!confirm('This will clear all data. Continue?')) return;
     try {
       const res = await fetch(`${API_URL}/api/reset`, { 
@@ -71,7 +71,7 @@ export default function Admin(){
       });
       const data = await res.json();
       alert(data.message || "Data reset complete");
-      loadAll(); // reload dashboard after reset
+      loadAll();
     } catch (err) {
       console.error("Reset error:", err);
       alert("Failed to reset data");
@@ -101,39 +101,67 @@ export default function Admin(){
 
   return (
     <section className="grid" style={{margin:'28px 0'}}>
+      {/* Shooting Contest */}
       <div className="card">
         <h3 style={{marginTop:0}}>Shooting Contest</h3>
         <table>
-          <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Time (mm:ss)</th>
+              <th></th>
+            </tr>
+          </thead>
           <tbody>
             {shooting.map(p=>{
-              const [mm,ss] = String(p.time||'00:00').split(':');
+              const [mm, ss] = String(p.time || '00:00').split(':');
+              const [score, setScore] = useState(p.score || 0);
+              const [min, setMin] = useState(mm || '00');
+              const [sec, setSec] = useState(ss || '00');
+
               return (
                 <tr key={p.id}>
                   <td>{p.name}</td>
-                  <td><input type="number" defaultValue={p.score||0} id={`s-${p.id}`} /></td>
+                  <td>
+                    <input 
+                      type="number" 
+                      value={score} 
+                      onChange={e=>setScore(e.target.value)} 
+                    />
+                  </td>
                   <td>
                     <div style={{display:'flex', gap:6}}>
-                      <input style={{width:70}} defaultValue={mm||'00'} id={`m-${p.id}`} placeholder="mm" />
-                      <input style={{width:70}} defaultValue={ss||'00'} id={`x-${p.id}`} placeholder="ss" />
+                      <input 
+                        style={{width:70}} 
+                        value={min} 
+                        onChange={e=>setMin(e.target.value.padStart(2,'0'))} 
+                        placeholder="mm" 
+                      />
+                      <input 
+                        style={{width:70}} 
+                        value={sec} 
+                        onChange={e=>setSec(e.target.value.padStart(2,'0'))} 
+                        placeholder="ss" 
+                      />
                     </div>
                   </td>
                   <td>
                     <button className="btn" onClick={()=>{
-                      const s = document.getElementById(`s-${p.id}`).value;
-                      const m = document.getElementById(`m-${p.id}`).value.padStart(2,'0');
-                      const x = document.getElementById(`x-${p.id}`).value.padStart(2,'0');
-                      saveScore(p.id, s, `${m}:${x}`);
+                      saveScore(p.id, score, `${min}:${sec}`)
                     }}>Save</button>
                   </td>
                 </tr>
               )
             })}
-            {shooting.length===0 && <tr><td colSpan="4" className="muted">No shooting entries yet.</td></tr>}
+            {shooting.length===0 && (
+              <tr><td colSpan="4" className="muted">No shooting entries yet.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Teams */}
       <div className="card">
         <h3 style={{marginTop:0}}>Teams</h3>
         <div className="cta"><button className="btn" onClick={autoTeams}>Auto-Assign Teams</button></div>
@@ -143,13 +171,15 @@ export default function Admin(){
         </div>
       </div>
 
+      {/* Tickets */}
       <div className="card">
         <h3 style={{marginTop:0}}>Tickets</h3>
         <p className="muted">Total requested: <strong>{(tickets||[]).reduce((a,b)=>a+Number(b.quantity||0),0)}</strong></p>
         <ul>{tickets.map(t=><li key={t.id}>{t.buyer || t.name} — {t.quantity}</li>)}</ul>
       </div>
 
-      {ok && (   /* ✅ Danger Zone only for logged-in admin */
+      {/* Danger Zone */}
+      {ok && (
         <div className="card">
           <h3 style={{marginTop:0}}>Danger Zone</h3>
           <button className="btn danger" onClick={resetData}>Remove All Data</button>
