@@ -3,97 +3,129 @@ import React, { useEffect, useState } from 'react';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Admin() {
+  const [pass, setPass] = useState('');
+  const [ok, setOk] = useState(false);
+
   const [players, setPlayers] = useState([]);
+  const [shooting, setShooting] = useState([]);
   const [tickets, setTickets] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [teams, setTeams] = useState({ A: [], B: [] });
 
-  async function loadData() {
-    setLoading(true);
+  async function loadAll() {
     try {
-      const [pRes, tRes, mRes] = await Promise.all([
-        fetch(`${API_URL}/api/players`),
-        fetch(`${API_URL}/api/tickets`),
-        fetch(`${API_URL}/api/messages`)
+      const [p, s, t, tm] = await Promise.all([
+        fetch(`${API_URL}/api/players`).then(r => r.json()),
+        fetch(`${API_URL}/api/shooting`).then(r => r.json()).catch(() => []),
+        fetch(`${API_URL}/api/tickets`).then(r => r.json()),
+        fetch(`${API_URL}/api/teams`).then(r => r.json()).catch(() => ({ A: [], B: [] }))
       ]);
-
-      if (!pRes.ok || !tRes.ok || !mRes.ok) {
-        throw new Error('Failed to fetch data from server');
-      }
-
-      const [pData, tData, mData] = await Promise.all([
-        pRes.json(),
-        tRes.json(),
-        mRes.json()
-      ]);
-
-      setPlayers(pData);
-      setTickets(tData);
-      setMessages(mData);
-      setError('');
+      setPlayers(p || []);
+      setShooting(s || []);
+      setTickets(t || []);
+      setTeams(tm || { A: [], B: [] });
     } catch (err) {
-      console.error('Admin Dashboard load error:', err);
-      setError('❌ Could not load data from server');
-    } finally {
-      setLoading(false);
+      console.error('Admin loadAll error:', err);
     }
   }
 
   useEffect(() => {
-    loadData(); // initial load
-    const interval = setInterval(loadData, 10000); // auto-refresh every 10s
-    return () => clearInterval(interval);
-  }, []);
+    if (ok) {
+      loadAll();
+      const i = setInterval(loadAll, 8000);
+      return () => clearInterval(i);
+    }
+  }, [ok]);
+
+  async function saveScore(id, score, time) {
+    try {
+      await fetch(`${API_URL}/api/shooting/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score, time })
+      });
+      loadAll();
+    } catch (err) {
+      console.error('Save score error:', err);
+    }
+  }
+
+  async function login() {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass })
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setOk(true);
+      } else {
+        alert('Invalid password');
+      }
+    } catch (err) {
+      alert('Login failed');
+    }
+  }
+
+  if (!ok) {
+    return (
+      <div className="card">
+        <h2>Admin Login</h2>
+        <input
+          type="password"
+          value={pass}
+          onChange={e => setPass(e.target.value)}
+          placeholder="Enter admin password"
+        />
+        <button onClick={login}>Login</button>
+      </div>
+    );
+  }
 
   return (
     <div className="card" style={{ margin: '28px 0', padding: '16px' }}>
       <h2>Admin Dashboard</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <button onClick={loadData} disabled={loading} style={{ marginBottom: '16px' }}>
-        {loading ? 'Refreshing...' : '🔄 Refresh Now'}
-      </button>
 
       <section>
         <h3>Players</h3>
-        {players.length === 0 ? (
-          <p>No players registered yet.</p>
-        ) : (
-          <ul>
-            {players.map(p => (
-              <li key={p.id}>
-                {p.name} (Age {p.age}) {p.shooting ? '🏀 Shooting' : ''} {p.team ? '👥 Team' : ''}
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul>
+          {players.map(p => (
+            <li key={p.id}>
+              {p.name} (Age {p.age}) {p.shooting ? '🏀 Shooting' : ''} {p.team ? '👥 Team' : ''}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section>
         <h3>Tickets</h3>
-        {tickets.length === 0 ? (
-          <p>No tickets purchased yet.</p>
-        ) : (
-          <ul>
-            {tickets.map(t => (
-              <li key={t.id}>{t.buyer} — {t.quantity} ticket(s)</li>
-            ))}
-          </ul>
-        )}
+        <ul>
+          {tickets.map(t => (
+            <li key={t.id}>{t.buyer} — {t.quantity} ticket(s)</li>
+          ))}
+        </ul>
       </section>
 
       <section>
-        <h3>Messages</h3>
-        {messages.length === 0 ? (
-          <p>No messages posted yet.</p>
-        ) : (
-          <ul>
-            {messages.map(m => (
-              <li key={m.id}><b>{m.author}</b>: {m.text}</li>
-            ))}
-          </ul>
-        )}
+        <h3>Shooting Scores</h3>
+        <ul>
+          {shooting.map(s => (
+            <li key={s.id}>
+              {s.name} — Score: {s.score}, Time: {s.time}{' '}
+              <button onClick={() => saveScore(s.id, s.score + 1, s.time)}>+1</button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h3>Teams</h3>
+        <div>
+          <b>Team A:</b> {teams.A.join(', ') || 'No players'}
+        </div>
+        <div>
+          <b>Team B:</b> {teams.B.join(', ') || 'No players'}
+        </div>
       </section>
     </div>
   );
