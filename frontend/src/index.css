@@ -14,3 +14,41 @@ body { @apply bg-black text-white font-body; }
 .select { @apply bg-white text-black rounded-lg px-4 py-2; }
 .table { @apply w-full text-left; }
 .table th, .table td { @apply px-3 py-2; }
+/* Desktop nav */
+nav {
+  display: flex;
+  gap: 16px;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  nav {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    position: absolute;
+    top: 60px;   /* adjust based on header height */
+    right: 20px;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  nav.open {
+    display: flex;
+  }
+  .menu-toggle {
+    display: block;
+  }
+}
