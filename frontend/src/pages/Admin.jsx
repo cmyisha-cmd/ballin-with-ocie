@@ -62,15 +62,19 @@ export default function Admin(){
   }
 
   async function resetData(){
+    if(!ok) return; // ✅ block if not logged in
     if(!confirm('This will clear all data. Continue?')) return;
     try {
-      await fetch(`${API_URL}/api/reset`, { 
+      const res = await fetch(`${API_URL}/api/reset`, { 
         method:'POST', 
         headers:{ 'x-admin-pass': 'ocie2025' } 
       });
-      loadAll();
+      const data = await res.json();
+      alert(data.message || "Data reset complete");
+      loadAll(); // reload dashboard after reset
     } catch (err) {
       console.error("Reset error:", err);
+      alert("Failed to reset data");
     }
   }
 
@@ -142,13 +146,15 @@ export default function Admin(){
       <div className="card">
         <h3 style={{marginTop:0}}>Tickets</h3>
         <p className="muted">Total requested: <strong>{(tickets||[]).reduce((a,b)=>a+Number(b.quantity||0),0)}</strong></p>
-        <ul>{tickets.map(t=><li key={t.id}>{t.name} — {t.quantity}</li>)}</ul>
+        <ul>{tickets.map(t=><li key={t.id}>{t.buyer || t.name} — {t.quantity}</li>)}</ul>
       </div>
 
-      <div className="card">
-        <h3 style={{marginTop:0}}>Danger Zone</h3>
-        <button className="btn danger" onClick={resetData}>Remove Test Data</button>
-      </div>
+      {ok && (   /* ✅ Danger Zone only for logged-in admin */
+        <div className="card">
+          <h3 style={{marginTop:0}}>Danger Zone</h3>
+          <button className="btn danger" onClick={resetData}>Remove All Data</button>
+        </div>
+      )}
     </section>
   )
 }
