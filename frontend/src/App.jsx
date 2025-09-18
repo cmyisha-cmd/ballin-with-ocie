@@ -31,6 +31,7 @@ export default function App(){
             ☰
           </button>
 
+          {/* Nav menu */}
           <nav className={menuOpen ? 'open' : ''}>
             <Link to="/" onClick={()=>setMenuOpen(false)}>Home</Link>
             <Link to="/register" onClick={()=>setMenuOpen(false)}>Register</Link>
