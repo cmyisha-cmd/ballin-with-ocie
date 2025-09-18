@@ -3,25 +3,22 @@ import cors from 'cors';
 import pkg from 'pg';
 
 const { Pool } = pkg;
-
 const app = express();
 
-// --- CORS (open for now; tighten later if you want)
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'PATCH'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'x-admin-pass']
 }));
 app.use(express.json());
 
 const ADMIN_PASS = process.env.ADMIN_PASS || 'ocie2025';
 
-// --- Postgres pool
+// --- Postgres pool ---
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
-
 async function q(text, params = []) {
   const client = await pool.connect();
   try {
@@ -31,7 +28,7 @@ async function q(text, params = []) {
   }
 }
 
-// --- Init DB
+// --- Init DB ---
 async function initDB() {
   await q(`
     CREATE TABLE IF NOT EXISTS players (
@@ -61,7 +58,9 @@ async function initDB() {
       id BIGSERIAL PRIMARY KEY,
       author TEXT NOT NULL,
       text TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT NOW()
+      created_at TIMESTAMP DEFAULT NOW(),
+      reactions JSONB,
+      replies JSONB
     );
   `);
 }
@@ -70,16 +69,19 @@ initDB().catch(err => {
   process.exit(1);
 });
 
-// Helpers
+// --- Helpers ---
 const newId = () => Date.now();
 
-// --- Routes ---
+// ======================================
+// ============== ROUTES ================
+// ======================================
 
+// Health
 app.get('/', (_req, res) => {
   res.send('Ballin with Ocie server (Postgres) is running 🚀');
 });
 
-// Register player
+// ----- Registration -----
 app.post('/api/register', async (req, res) => {
   try {
     const { name, age, shooting, team } = req.body || {};
@@ -94,6 +96,7 @@ app.post('/api/register', async (req, res) => {
       [id, String(name), Number(age), !!shooting, !!team]
     );
 
+    // assign teams evenly if checked
     if (team) {
       const { rows: counts } = await q(`
         WITH counts AS (
@@ -117,14 +120,17 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Tickets
+// ----- Tickets -----
 app.post('/api/tickets', async (req, res) => {
   try {
     const { buyer, quantity } = req.body || {};
     if (!buyer || !quantity) {
       return res.status(400).json({ message: 'Buyer and quantity required' });
     }
-    await q(`INSERT INTO tickets (buyer, quantity) VALUES ($1,$2)`, [String(buyer), Number(quantity)]);
+    await q(
+      `INSERT INTO tickets (buyer, quantity) VALUES ($1,$2)`,
+      [String(buyer), Number(quantity)]
+    );
     res.json({ message: 'Tickets purchased successfully!' });
   } catch (err) {
     console.error('tickets error:', err);
@@ -132,14 +138,34 @@ app.post('/api/tickets', async (req, res) => {
   }
 });
 
-// Message
-app.post('/api/message', async (req, res) => {
+// ----- Message Board -----
+app.get('/api/messages', async (_req, res) => {
   try {
-    const { author, text } = req.body || {};
-    if (!author || !text) {
-      return res.status(400).json({ message: 'Author and text required' });
+    const { rows } = await q(`SELECT * FROM messages ORDER BY created_at DESC`);
+    res.json(rows.map(r => ({
+      id: r.id,
+      name: r.author,
+      text: r.text,
+      created_at: r.created_at,
+      reactions: r.reactions || {},
+      replies: r.replies || []
+    })));
+  } catch (err) {
+    console.error('get messages error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/messages', async (req, res) => {
+  try {
+    const { name, text } = req.body || {};
+    if (!name || !text) {
+      return res.status(400).json({ message: 'Name and text required' });
     }
-    await q(`INSERT INTO messages (author, text) VALUES ($1,$2)`, [String(author), String(text)]);
+    await q(
+      `INSERT INTO messages (author, text, reactions, replies) VALUES ($1,$2,'{}','[]')`,
+      [String(name), String(text)]
+    );
     res.json({ message: 'Message posted successfully!' });
   } catch (err) {
     console.error('message error:', err);
@@ -147,45 +173,67 @@ app.post('/api/message', async (req, res) => {
   }
 });
 
-// Admin login
-app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body || {};
-  if (password === ADMIN_PASS) return res.json({ ok: true });
-  return res.status(403).json({ ok: false, message: 'Invalid password' });
-});
-
-// GET endpoints
-app.get('/api/players', async (_req, res) => {
+app.delete('/api/messages/:id', async (req, res) => {
   try {
-    const { rows } = await q(`SELECT * FROM players ORDER BY created_at DESC`);
-    res.json(rows);
+    if (req.headers['x-admin-pass'] !== ADMIN_PASS) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const { id } = req.params;
+    await q(`DELETE FROM messages WHERE id=$1`, [id]);
+    res.json({ message: 'Message deleted' });
   } catch (err) {
-    console.error('get players error:', err);
+    console.error('delete message error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-app.get('/api/tickets', async (_req, res) => {
+app.post('/api/messages/:id/react', async (req, res) => {
   try {
-    const { rows } = await q(`SELECT * FROM tickets ORDER BY created_at DESC`);
-    res.json(rows.map(r => ({ id: r.id, buyer: r.buyer, name: r.buyer, quantity: r.quantity })));
+    const { id } = req.params;
+    const { emoji } = req.body || {};
+    if (!emoji) return res.status(400).json({ message: 'Emoji required' });
+
+    await q(`
+      UPDATE messages
+      SET reactions = COALESCE(reactions, '{}'::jsonb) || 
+          jsonb_build_object($1, ((COALESCE(reactions->>$1,'0'))::int + 1))
+      WHERE id=$2
+    `, [emoji, id]);
+
+    res.json({ message: 'Reaction added' });
   } catch (err) {
-    console.error('get tickets error:', err);
+    console.error('reaction error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-app.get('/api/messages', async (_req, res) => {
+app.post('/api/messages/:id/reply', async (req, res) => {
   try {
-    const { rows } = await q(`SELECT * FROM messages ORDER BY created_at DESC`);
-    res.json(rows);
+    const { id } = req.params;
+    const { name, text } = req.body || {};
+    if (!name || !text) {
+      return res.status(400).json({ message: 'Name and text required' });
+    }
+    await q(`
+      UPDATE messages
+      SET replies = COALESCE(replies, '[]'::jsonb) || jsonb_build_array(
+        jsonb_build_object(
+          'id', EXTRACT(EPOCH FROM NOW())::bigint,
+          'name', $1,
+          'text', $2
+        )
+      )
+      WHERE id=$3
+    `, [name, text, id]);
+
+    res.json({ message: 'Reply added' });
   } catch (err) {
-    console.error('get messages error:', err);
+    console.error('reply error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Shooting leaderboard
+// ----- Shooting Leaderboard -----
 app.get('/api/shooting', async (_req, res) => {
   try {
     const { rows } = await q(`
@@ -207,27 +255,22 @@ app.get('/api/shooting', async (_req, res) => {
   }
 });
 
-// ✅ Fixed PATCH for shooting score/time
 app.patch('/api/shooting/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { score, time } = req.body || {};
-
     const s = Number(score || 0);
     let t = '00:00';
     if (time && /^\d{1,2}:\d{2}$/.test(time)) {
       t = time;
     }
-
     const upd = await q(
       `UPDATE players SET score=$1, time=$2 WHERE id=CAST($3 AS BIGINT) AND shooting=TRUE`,
       [s, t, id]
     );
-
     if (upd.rowCount === 0) {
       return res.status(404).json({ message: 'Player not found or not in shooting contest' });
     }
-
     res.json({ message: 'Score updated' });
   } catch (err) {
     console.error('patch shooting error:', err);
@@ -235,7 +278,7 @@ app.patch('/api/shooting/:id', async (req, res) => {
   }
 });
 
-// Teams
+// ----- Teams -----
 app.get('/api/teams', async (_req, res) => {
   try {
     const { rows } = await q(`SELECT id, name, team_group FROM players WHERE team_group IS NOT NULL ORDER BY name ASC`);
@@ -265,7 +308,7 @@ app.post('/api/teams/auto', async (req, res) => {
   }
 });
 
-// Reset
+// ----- Reset -----
 app.post('/api/reset', async (req, res) => {
   try {
     if (req.headers['x-admin-pass'] !== ADMIN_PASS) {
