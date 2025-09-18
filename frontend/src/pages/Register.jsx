@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Register() {
   const [form, setForm] = useState({ name: '', age: '', shooting: false, team: false });
   const [msg, setMsg] = useState('');
@@ -8,7 +10,8 @@ export default function Register() {
     e.preventDefault();
     setMsg('');
     try {
-      const res = await fetch('https://ball-with-ocie.onrender.com/api/register', {
+      console.log("Submitting to:", `${API_URL}/api/register`);
+      const res = await fetch(`${API_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -21,6 +24,7 @@ export default function Register() {
         setMsg('❌ ' + (data.message || 'Failed'));
       }
     } catch (err) {
+      console.error("Register error:", err);
       setMsg('❌ Network error');
     }
   }
@@ -30,16 +34,9 @@ export default function Register() {
       <h2 style={{ marginTop: 0 }}>Register as a Player</h2>
       <form onSubmit={submit}>
         <label>Name</label>
-        <input
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
+        <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <label>Age</label>
-        <input
-          type="number"
-          value={form.age}
-          onChange={(e) => setForm({ ...form, age: e.target.value })}
-        />
+        <input type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
         <label>
           <input
             type="checkbox"
