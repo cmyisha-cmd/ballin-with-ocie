@@ -37,8 +37,11 @@ export default function Leaderboard() {
 
   return (
     <section className="card" style={{ margin: '28px 0', padding: '16px' }}>
-      <h2>Shooting Contest Leaderboard</h2>
-      <table>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <h2>Shooting Contest Leaderboard</h2>
+        <span className="pill">{shooting.length} players</span>
+      </div>
+      <table style={{ marginTop: 10 }}>
         <thead>
           <tr>
             <th>Rank</th>
