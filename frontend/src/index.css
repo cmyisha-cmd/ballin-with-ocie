@@ -63,12 +63,12 @@ nav a {
 }
 
 .menu-toggle {
-  display: none;
+  display: none;  /* ✅ hidden on desktop */
   font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 1100; /* always clickable above overlay */
+  z-index: 1100; /* always above overlay */
 }
 
 /* ========================= */
@@ -76,12 +76,12 @@ nav a {
 /* ========================= */
 @media (max-width: 768px) {
   nav {
-    display: none;              /* hidden by default */
+    display: none;              /* ✅ hidden by default on mobile */
     flex-direction: column;
     gap: 12px;
     position: fixed;
     top: 0;
-    right: -260px;              /* slide-in from off-screen */
+    right: -260px;              /* off-screen */
     height: 100%;
     width: 240px;
     background: #111;           /* dark menu background */
@@ -94,16 +94,16 @@ nav a {
   }
 
   nav.open {
-    display: flex;
+    display: flex;              /* ✅ only show when menuOpen=true */
     right: 0;                   /* slide in */
   }
 
   .menu-toggle {
-    display: block;             /* show hamburger on mobile */
+    display: block;             /* ✅ hamburger visible on mobile */
   }
 
   nav a {
-    display: block;             /* full width clickable */
+    display: block;             /* ✅ full-width tap area */
     padding: 12px;
     border-radius: 6px;
     background: transparent;
