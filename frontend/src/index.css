@@ -1,90 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root { color-scheme: dark; }
-
-body { 
-  @apply bg-black text-white font-body; 
-}
-
-.nav { 
-  @apply bg-black/60 backdrop-blur sticky top-0 z-50 border-b border-white/10; 
-}
-
-.btn { 
-  @apply bg-primary hover:bg-purple-700 text-white font-bold px-5 py-3 rounded-xl shadow; 
-}
-
-.card { 
-  @apply bg-zinc-900/70 rounded-2xl shadow p-5 border border-white/5; 
-}
-
-.h1 { 
-  @apply font-display text-5xl sm:text-6xl text-primary drop-shadow; 
-}
-
-.h2 { 
-  @apply font-display text-3xl sm:text-4xl text-primary; 
-}
-
-.label { 
-  @apply text-sm text-gray-300; 
-}
-
-.input { 
-  @apply bg-white text-black rounded-lg px-4 py-2; 
-}
-
-.select { 
-  @apply bg-white text-black rounded-lg px-4 py-2; 
-}
-
-.table { 
-  @apply w-full text-left; 
-}
-
-.table th, .table td { 
-  @apply px-3 py-2; 
-}
-
-/* ========================= */
-/* Desktop Navigation        */
-/* ========================= */
+/* Desktop nav: visible inline */
 nav {
-  display: flex;
+  display: flex !important;   /* force inline on desktop */
   gap: 16px;
 }
 
-nav a {
-  text-decoration: none;
-  color: inherit;
-  font-weight: 500;
-}
-
 .menu-toggle {
-  display: none;  /* ✅ hidden on desktop */
+  display: none;              /* hidden on desktop */
   font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 1100; /* always above overlay */
+  z-index: 1100;
 }
 
-/* ========================= */
-/* Mobile Navigation         */
-/* ========================= */
+/* Mobile nav overrides */
 @media (max-width: 768px) {
   nav {
-    display: none;              /* ✅ hidden by default on mobile */
+    display: none !important;   /* hide by default on mobile */
     flex-direction: column;
     gap: 12px;
     position: fixed;
     top: 0;
-    right: -260px;              /* off-screen */
+    right: -260px;
     height: 100%;
     width: 240px;
-    background: #111;           /* dark menu background */
+    background: #111;
     color: white;
     padding: 20px;
     box-shadow: -4px 0 12px rgba(0,0,0,0.3);
@@ -94,16 +34,16 @@ nav a {
   }
 
   nav.open {
-    display: flex;              /* ✅ only show when menuOpen=true */
-    right: 0;                   /* slide in */
+    display: flex !important;   /* show when open */
+    right: 0;
   }
 
   .menu-toggle {
-    display: block;             /* ✅ hamburger visible on mobile */
+    display: block !important;  /* show hamburger on mobile */
   }
 
   nav a {
-    display: block;             /* ✅ full-width tap area */
+    display: block;
     padding: 12px;
     border-radius: 6px;
     background: transparent;
@@ -114,7 +54,6 @@ nav a {
     background: rgba(255,255,255,0.1);
   }
 
-  /* Overlay behind menu */
   .menu-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
