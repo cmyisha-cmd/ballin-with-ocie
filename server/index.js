@@ -50,7 +50,7 @@ async function migrate() {
 await migrate();
 
 // Manual migration trigger
-app.post('/api/migrate', async (req, res) => {
+app.get('/api/migrate', async (req, res) => {
   try {
     await migrate()
     res.json({ message: 'Migration complete' })
