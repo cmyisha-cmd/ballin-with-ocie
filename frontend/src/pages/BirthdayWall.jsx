@@ -9,38 +9,49 @@ export default function BirthdayWall(){
   const [admin, setAdmin] = useState(false)
   const [adminPass, setAdminPass] = useState('')
 
-  async function load(){ try{ const r=await fetch(`${API_URL}/api/messages`); setList(await r.json()) }catch{} }
+  async function load(){ 
+    try{ 
+      const r = await fetch(`${API_URL}/api/messages`) 
+      setList(await r.json()) 
+    }catch(e){ console.error('Load failed', e) } 
+  }
   useEffect(()=>{ load(); const t=setInterval(load, 5000); return ()=>clearInterval(t) }, [])
 
   async function post(e){
     e.preventDefault()
     if(!form.name || !form.text) return
-    await fetch(`${API_URL}/api/messages`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) })
-    setForm({ name:'', text:'' }); load()
+    await fetch(`${API_URL}/api/messages`, { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify(form) 
+    })
+    setForm({ name:'', text:'' })
+    load()
   }
   async function react(id, emoji){
-    await fetch(`${API_URL}/api/messages/${id}/react`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({emoji}) })
+    await fetch(`${API_URL}/api/messages/${id}/react`, { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({emoji}) 
+    })
     load()
   }
   async function reply(id, name, text){
     if(!name || !text) return
-    await fetch(`${API_URL}/api/messages/${id}/reply`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, text}) })
+    await fetch(`${API_URL}/api/messages/${id}/reply`, { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({name, text}) 
+    })
     load()
   }
   async function del(id){
     if(!admin) return
-    await fetch(`${API_URL}/api/messages/${id}`, { method:'DELETE', headers:{ 'x-admin-pass': 'ocie2025' } })
+    await fetch(`${API_URL}/api/messages/${id}`, { 
+      method:'DELETE', 
+      headers:{ 'x-admin-pass': 'ocie2025' } 
+    })
     load()
-  }
-
-  function AdminBox(){
-    if(admin) return <div className="pill">Admin mode</div>
-    return (
-      <form onSubmit={(e)=>{ e.preventDefault(); if(adminPass==='ocie2025') setAdmin(true); else alert('Wrong password'); }} style={{display:'flex', gap:8, alignItems:'center'}}>
-        <input placeholder="Admin password" type="password" value={adminPass} onChange={e=>setAdminPass(e.target.value)} />
-        <button className="btn" type="submit">Login</button>
-      </form>
-    )
   }
 
   return (
@@ -49,9 +60,18 @@ export default function BirthdayWall(){
         <h2 style={{marginTop:0}}>Birthday Wall 🎉</h2>
         <form onSubmit={post}>
           <label>Your Name</label>
-          <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+          <input 
+            value={form.name} 
+            onChange={e=>setForm({...form, name:e.target.value})} 
+            required 
+          />
           <label>Message</label>
-          <textarea value={form.text} onChange={e=>setForm({...form, text:e.target.value})} required placeholder="Type your message, add emojis below…" />
+          <textarea 
+            value={form.text} 
+            onChange={e=>setForm({...form, text:e.target.value})} 
+            required 
+            placeholder="Type your message, add emojis below…" 
+          />
           <div className="emoji-row" style={{marginTop:8}}>
             {EMOJIS.map(e=>(<button key={e} type="button" onClick={()=>setForm({...form, text: form.text + e})}>{e}</button>))}
           </div>
@@ -63,7 +83,7 @@ export default function BirthdayWall(){
 
       <div className="card" style={{marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
         <h3 style={{margin:0}}>Messages</h3>
-        <AdminBox />
+        <AdminBox admin={admin} setAdmin={setAdmin} adminPass={adminPass} setAdminPass={setAdminPass} />
       </div>
 
       <div className="grid">
@@ -97,18 +117,66 @@ export default function BirthdayWall(){
   )
 }
 
-function ReplyForm({onSubmit}){
-  const [name,setName]=React.useState(''), [text,setText]=React.useState('')
+function AdminBox({admin, setAdmin, adminPass, setAdminPass}){
+  if(admin) return <div className="pill">Admin mode</div>
   return (
-    <form onSubmit={(e)=>{e.preventDefault(); onSubmit(name,text); setName(''); setText('')}} style={{marginTop:8}}>
+    <div style={{display:'flex', gap:8, alignItems:'center', marginTop:8, width:'100%'}}>
+      <form 
+        onSubmit={(e)=>{ 
+          e.preventDefault(); 
+          if(adminPass==='ocie2025') setAdmin(true); 
+          else alert('Wrong password'); 
+        }} 
+        style={{display:'flex', gap:8, flex:1}}
+      >
+        <input 
+          style={{flex:1}} 
+          placeholder="Admin password" 
+          type="password" 
+          value={adminPass} 
+          onChange={e=>setAdminPass(e.target.value)} 
+        />
+        <button className="btn" type="submit">Login</button>
+      </form>
+    </div>
+  )
+}
+
+function ReplyForm({onSubmit}){
+  const [name,setName] = React.useState('')
+  const [text,setText] = React.useState('')
+  return (
+    <form 
+      onSubmit={(e)=>{
+        e.preventDefault(); 
+        if(name && text){ 
+          onSubmit(name,text); 
+          setName(''); 
+          setText(''); 
+        }
+      }} 
+      style={{marginTop:8}}
+    >
       <div className="grid">
-        <input placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} required />
-        <input placeholder="Reply…" value={text} onChange={e=>setText(e.target.value)} required />
+        <input 
+          placeholder="Your name" 
+          value={name} 
+          onChange={e=>setName(e.target.value)} 
+          required 
+        />
+        <input 
+          placeholder="Reply…" 
+          value={text} 
+          onChange={e=>setText(e.target.value)} 
+          required 
+        />
       </div>
       <div className="emoji-row" style={{marginTop:8}}>
         {['🎉','❤️','🙌','👍','🏀'].map(e=>(<button key={e} type="button" onClick={()=>setText(text + e)}>{e}</button>))}
       </div>
-      <div className="cta"><button className="btn" type="submit">Reply</button></div>
+      <div className="cta">
+        <button className="btn" type="submit">Reply</button>
+      </div>
     </form>
   )
 }
