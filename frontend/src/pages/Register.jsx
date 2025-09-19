@@ -18,7 +18,7 @@ export default function Register(){
 
   return (
     <section className="card" style={{margin:'28px 0'}}>
-      <h2>Register to Play</h2>
+      <h2>🏀Register to Play</h2> 
       <form onSubmit={submit} className="grid" style={{gap:12}}>
         <input placeholder="Name" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required/>
         <input placeholder="Age" value={form.age} onChange={e=>setForm({...form, age:e.target.value})} required/>
