@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import './birthdaywall.css'
+import '../birthdaywall.css'   // ✅ corrected path (was ./birthdaywall.css)
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ballin-with-ocie.onrender.com'
 const EMOJIS = ['🎉','🎂','🏀','🔥','👍','❤️','🙌']
