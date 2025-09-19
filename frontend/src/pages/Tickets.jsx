@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const API_URL = "https://ballin-with-ocie.onrender.com";
 
 export default function Tickets() {
-  const [buyer, setBuyer] = useState('');
+  const [name, setName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [msg, setMsg] = useState('');
 
@@ -17,7 +17,7 @@ export default function Tickets() {
       });
       const data = await res.json();
       setMsg(data.message || 'Tickets requested');
-      setBuyer(''); setQuantity(1);
+      setName(''); setQuantity(1);
     } catch (err) {
       setMsg('Error requesting tickets');
     }
@@ -29,8 +29,8 @@ export default function Tickets() {
       <form onSubmit={submit} className="grid" style={{ gap: 12 }}>
         <input
           placeholder="Your Name"
-          value={buyer}
-          onChange={e => setBuyer(e.target.value)}
+          value={name}
+          onChange={e => setName(e.target.value)}
           required
         />
         <input
