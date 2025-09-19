@@ -22,5 +22,5 @@ export default function Register() {
     }
   }
 
-  return (/* same JSX as before, just unchanged */);
+  return (/* keep your JSX form code same */);
 }

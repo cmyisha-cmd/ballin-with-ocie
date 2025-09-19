@@ -23,5 +23,5 @@ export default function Tickets() {
     }
   }
 
-  return (/* same JSX as before */);
+  return (/* keep your JSX form code same */);
 }

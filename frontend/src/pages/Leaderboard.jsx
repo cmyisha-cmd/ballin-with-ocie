@@ -34,5 +34,5 @@ export default function Leaderboard() {
     return () => clearInterval(interval);
   }, []);
 
-  return (/* same render code as before */);
+  return (/* keep your table rendering code same */);
 }
