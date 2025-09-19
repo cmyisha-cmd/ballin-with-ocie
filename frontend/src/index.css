@@ -21,3 +21,17 @@ th,td{padding:8px;border-bottom:1px solid #ffffff12}
   .menu-toggle{display:block}
 }
 .menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none}
+
+/* Fix button layout on mobile */
+.cta {
+  display: flex;
+  flex-wrap: wrap;        /* allow wrapping */
+  gap: 12px;
+  justify-content: center;
+}
+
+.cta .btn {
+  flex: 1 1 auto;         /* buttons resize */
+  min-width: 140px;       /* keep readable size */
+  text-align: center;
+}
