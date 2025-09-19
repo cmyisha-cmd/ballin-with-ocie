@@ -1,69 +1,23 @@
-/* Desktop nav: visible inline */
-nav {
-  display: flex !important;   /* force inline on desktop */
-  gap: 16px;
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;background:#0b0b0b;color:#fff}
+.wrap{max-width:1024px;margin:0 auto;padding:0 16px}
+.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;gap:10px;align-items:center}
+.ball{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff7300,#a100ff)}
+nav{display:flex;gap:12px}
+a{color:#fff;text-decoration:none}
+.hero{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:24px 0}
+.btn{background:#7c3aed;padding:10px 14px;border-radius:10px;box-shadow:0 2px 8px #0004}
+.btn:hover{background:#6d28d9}
+.card{background:#111418;border:1px solid #ffffff12;border-radius:14px;padding:16px}
+.pill{background:#ffffff12;padding:4px 8px;border-radius:999px}
+.grid{display:grid;gap:12px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #ffffff12}
+.menu-toggle{display:none;font-size:24px;background:none;border:none;color:#fff}
+@media(max-width:768px){
+  .hero{flex-direction:column;align-items:flex-start}
+  nav{display:none;position:absolute;right:16px;top:56px;background:#111418;border:1px solid #ffffff22;border-radius:12px;padding:12px;flex-direction:column}
+  nav.open{display:flex}
+  .menu-toggle{display:block}
 }
-
-.menu-toggle {
-  display: none;              /* hidden on desktop */
-  font-size: 28px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  z-index: 1100;
-}
-
-/* Mobile nav overrides */
-@media (max-width: 768px) {
-  nav {
-    display: none !important;   /* hide by default on mobile */
-    flex-direction: column;
-    gap: 12px;
-    position: fixed;
-    top: 0;
-    right: -260px;
-    height: 100%;
-    width: 240px;
-    background: #111;
-    color: white;
-    padding: 20px;
-    box-shadow: -4px 0 12px rgba(0,0,0,0.3);
-    transition: right 0.3s ease;
-    z-index: 1001;
-    border-left: 1px solid rgba(255,255,255,0.1);
-  }
-
-  nav.open {
-    display: flex !important;   /* show when open */
-    right: 0;
-  }
-
-  .menu-toggle {
-    display: block !important;  /* show hamburger on mobile */
-  }
-
-  nav a {
-    display: block;
-    padding: 12px;
-    border-radius: 6px;
-    background: transparent;
-    transition: background 0.2s ease;
-  }
-
-  nav a:hover {
-    background: rgba(255,255,255,0.1);
-  }
-
-  .menu-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    animation: fadeIn 0.3s ease;
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none}

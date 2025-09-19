@@ -1,15 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Home(){
   return (
     <section className="hero">
       <div>
         <h1>Welcome to Ballin’ with Ocie!</h1>
-        <p className="muted">
-          Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message. 
-          Track live scores and brackets during the event.
-        </p>
+        <p className="muted">Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message. Track live scores and brackets during the event.</p>
         <div className="cta">
           <Link className="btn" to="/register">Register to Play</Link>
           <Link className="btn" to="/tickets">Get Tickets</Link>
@@ -18,5 +15,5 @@ export default function Home(){
         </div>
       </div>
     </section>
-  );
+  )
 }
