@@ -171,6 +171,17 @@ app.post('/api/messages/:id/reply', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Reply failed',500); }
 });
 
+// ✅ NEW: Delete message
+app.delete('/api/messages/:id', async (req,res)=>{
+  try{
+    if(!adminOK(req)) return bad(res,'Unauthorized',401);
+    const id = Number(req.params.id);
+    const { rowCount } = await pool.query(`DELETE FROM messages WHERE id=$1`, [id]);
+    if(rowCount === 0) return notFound(res);
+    ok(res, { message: 'Message deleted' });
+  }catch(e){ console.error(e); bad(res,'Delete failed',500); }
+});
+
 // Admin Reset Data
 app.post('/api/reset', async (req,res)=>{
   try{
@@ -180,7 +191,7 @@ app.post('/api/reset', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Reset failed',500); }
 });
 
-// Admin Reset Schema (drop + recreate)
+// Admin Reset Schema
 app.get('/api/reset-schema', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
