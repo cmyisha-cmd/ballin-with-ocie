@@ -35,3 +35,28 @@ th,td{padding:8px;border-bottom:1px solid #ffffff12}
   min-width: 140px;       /* keep readable size */
   text-align: center;
 }
+
+/* Ensure inputs fit nicely inside cards */
+input, textarea, select {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  margin-bottom: 14px;
+  box-sizing: border-box;   /* ✅ prevents overlap */
+}
+
+/* Make card content breathe */
+.card {
+  padding: 20px;            /* ✅ ensures space inside border */
+}
+
+/* Labels consistent */
+label {
+  display: block;
+  margin: 6px 0 4px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
