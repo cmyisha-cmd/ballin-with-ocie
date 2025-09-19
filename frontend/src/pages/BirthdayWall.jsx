@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import './birthdaywall.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ballin-with-ocie.onrender.com'
 const EMOJIS = ['🎉','🎂','🏀','🔥','👍','❤️','🙌']
@@ -76,7 +77,7 @@ export default function BirthdayWall(){
             {EMOJIS.map(e=>(<button key={e} type="button" onClick={()=>setForm({...form, text: form.text + e})}>{e}</button>))}
           </div>
           <div className="cta">
-            <button className="btn" type="submit">Post Message</button>
+            <button className="btn" type="submit">📩 Post Message</button>
           </div>
         </form>
       </div>
@@ -86,14 +87,14 @@ export default function BirthdayWall(){
         <AdminBox admin={admin} setAdmin={setAdmin} adminPass={adminPass} setAdminPass={setAdminPass} />
       </div>
 
-      <div className="grid">
+      <div>
         {list.map(msg=> (
-          <div key={msg.id} className="card">
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div key={msg.id} className="message-card">
+            <div className="message-header">
               <strong>{msg.name}</strong>
-              {admin && <button className="btn danger" onClick={()=>del(msg.id)}>Delete</button>}
+              {admin && <button className="btn danger" onClick={()=>del(msg.id)}>🗑 Delete</button>}
             </div>
-            <p style={{margin:'8px 0 10px'}}>{msg.text}</p>
+            <p className="message-text">{msg.text}</p>
             <div className="emoji-row">
               {EMOJIS.map(e=>(
                 <button key={e} type="button" onClick={()=>react(msg.id, e)}>
@@ -101,10 +102,10 @@ export default function BirthdayWall(){
                 </button>
               ))}
             </div>
-            <div style={{marginTop:10}}>
+            <div className="replies">
               <strong>Replies</strong>
               <ul>
-                {(msg.replies||[]).map(r=>(<li key={r.id}><span className="pill">{r.name}</span> {r.text}</li>))}
+                {(msg.replies||[]).map(r=>(<li key={r.id} className="reply"><span className="pill">{r.name}</span> {r.text}</li>))}
                 {(msg.replies||[]).length===0 && <li className="muted">No replies yet</li>}
               </ul>
               <ReplyForm onSubmit={(name,text)=>reply(msg.id,name,text)} />
@@ -175,7 +176,7 @@ function ReplyForm({onSubmit}){
         {['🎉','❤️','🙌','👍','🏀'].map(e=>(<button key={e} type="button" onClick={()=>setText(text + e)}>{e}</button>))}
       </div>
       <div className="cta">
-        <button className="btn" type="submit">Reply</button>
+        <button className="btn" type="submit">↩ Reply</button>
       </div>
     </form>
   )
