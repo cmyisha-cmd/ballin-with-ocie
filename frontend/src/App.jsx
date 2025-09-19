@@ -54,6 +54,7 @@ export default function App(){
           <Route path="/birthday" element={<BirthdayWall/>} />
           <Route path="/leaderboard" element={<Leaderboard/>} />
           <Route path="/admin" element={<Admin/>} />
+          <Route path="/api-check" element={<ApiCheck/>} />
         </Routes>
       </main>
 
