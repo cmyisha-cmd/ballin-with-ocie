@@ -13,7 +13,7 @@ export default function Tickets() {
       const res = await fetch(`${API_URL}/api/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: buyer, quantity }),
+        body: JSON.stringify({ name, quantity }),
       });
       const data = await res.json();
       setMsg(data.message || 'Tickets requested');
