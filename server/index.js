@@ -18,6 +18,7 @@ const pool = new Pool({
 app.use(cors({ origin: true }));
 app.use(express.json());
 
+// Migration function
 async function migrate() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS players (
@@ -49,24 +50,16 @@ async function migrate() {
 }
 await migrate();
 
-// Manual migration trigger
-app.get('/api/migrate', async (req, res) => {
-  try {
-    await migrate()
-    res.json({ message: 'Migration complete' })
-  } catch (e) {
-    console.error('Migration failed', e)
-    res.status(500).json({ message: 'Migration failed', error: e.message })
-  }
-})
-
+// Helpers
 function ok(res, data) { return res.json(data); }
-function bad(res, msg='Bad Request', code=400){ return res.status(code).json({message: msg}) }
-function notFound(res, msg='Not Found'){ return res.status(404).json({message: msg}) }
-function adminOK(req){ return req.headers['x-admin-pass'] === 'ocie2025' }
+function bad(res, msg='Bad Request', code=400){ return res.status(code).json({message: msg}); }
+function notFound(res, msg='Not Found'){ return res.status(404).json({message: msg}); }
+function adminOK(req){ return req.headers['x-admin-pass'] === 'ocie2025'; }
 
+// Health check
 app.get('/api/health', (req,res)=> ok(res,{ok:true}));
 
+// Registration
 app.post('/api/register', async (req,res)=>{
   try{
     const { name, age, shooting=false, team=false } = req.body || {};
@@ -78,12 +71,12 @@ app.post('/api/register', async (req,res)=>{
     ok(res, rows[0]);
   }catch(e){ console.error(e); bad(res,'Register failed',500); }
 });
-
 app.get('/api/players', async (req,res)=>{
   try{ const { rows } = await pool.query(`SELECT * FROM players ORDER BY id DESC`); ok(res, rows); }
   catch(e){ console.error(e); bad(res,'Failed to load players',500); }
 });
 
+// Tickets
 app.post('/api/tickets', async (req,res)=>{
   try{
     const { name, quantity } = req.body || {};
@@ -93,19 +86,18 @@ app.post('/api/tickets', async (req,res)=>{
     ok(res, rows[0]);
   }catch(e){ console.error(e); bad(res,'Ticket request failed',500); }
 });
-
 app.get('/api/tickets', async (req,res)=>{
   try{ const { rows } = await pool.query(`SELECT * FROM tickets ORDER BY id DESC`); ok(res, rows); }
   catch(e){ console.error(e); bad(res,'Failed to load tickets',500); }
 });
 
+// Shooting
 app.get('/api/shooting', async (req,res)=>{
   try{
     const { rows } = await pool.query(`SELECT id,name,score,time FROM players WHERE shooting=true ORDER BY id DESC`);
     ok(res, rows);
   }catch(e){ console.error(e); bad(res,'Failed to load shooting',500); }
 });
-
 app.patch('/api/shooting/:id', async (req,res)=>{
   try{
     const id = Number(req.params.id);
@@ -116,6 +108,7 @@ app.patch('/api/shooting/:id', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Update failed',500); }
 });
 
+// Teams
 app.get('/api/teams', async (req,res)=>{
   try{
     const { rows } = await pool.query(`SELECT id,name,team_group FROM players WHERE team=true ORDER BY id ASC`);
@@ -127,7 +120,6 @@ app.get('/api/teams', async (req,res)=>{
     ok(res, { A, B });
   }catch(e){ console.error(e); bad(res,'Failed to load teams',500); }
 });
-
 app.post('/api/teams/auto', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
@@ -137,13 +129,13 @@ app.post('/api/teams/auto', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Auto-assign failed',500); }
 });
 
+// Messages
 app.get('/api/messages', async (req,res)=>{
   try{
     const { rows } = await pool.query(`SELECT id,name,text,reactions,replies,created_at FROM messages ORDER BY id DESC`);
     ok(res, rows);
   }catch(e){ console.error(e); bad(res,'Failed to load messages',500); }
 });
-
 app.post('/api/messages', async (req,res)=>{
   try{
     const { name, text } = req.body || {};
@@ -152,7 +144,6 @@ app.post('/api/messages', async (req,res)=>{
     ok(res, rows[0]);
   }catch(e){ console.error(e); bad(res,'Post failed',500); }
 });
-
 app.post('/api/messages/:id/react', async (req,res)=>{
   try{
     const id = Number(req.params.id);
@@ -166,7 +157,6 @@ app.post('/api/messages/:id/react', async (req,res)=>{
     ok(res, rows[0]);
   }catch(e){ console.error(e); bad(res,'React failed',500); }
 });
-
 app.post('/api/messages/:id/reply', async (req,res)=>{
   try{
     const id = Number(req.params.id);
@@ -181,6 +171,7 @@ app.post('/api/messages/:id/reply', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Reply failed',500); }
 });
 
+// Admin Reset Data
 app.post('/api/reset', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
@@ -189,29 +180,22 @@ app.post('/api/reset', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Reset failed',500); }
 });
 
-// ⚠️ Reset database schema (drops + recreates all tables)
-// Only allow with admin password for safety
-app.get('/api/reset-schema', async (req, res) => {
-  try {
-    if (req.headers['x-admin-pass'] !== 'ocie2025') {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    // Drop old tables
+// Admin Reset Schema (drop + recreate)
+app.get('/api/reset-schema', async (req,res)=>{
+  try{
+    if(!adminOK(req)) return bad(res,'Unauthorized',401);
     await pool.query(`
       DROP TABLE IF EXISTS players CASCADE;
       DROP TABLE IF EXISTS tickets CASCADE;
       DROP TABLE IF EXISTS messages CASCADE;
     `);
-
-    // Recreate using migrate()
     await migrate();
-
     res.json({ message: 'Schema reset complete' });
-  } catch (e) {
+  }catch(e){
     console.error('Reset schema failed', e);
     res.status(500).json({ message: 'Schema reset failed', error: e.message });
   }
 });
 
+// Start server
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
