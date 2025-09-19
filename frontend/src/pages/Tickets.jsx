@@ -13,7 +13,7 @@ export default function Tickets() {
       const res = await fetch(`${API_URL}/api/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buyer, quantity }),
+        body: JSON.stringify({ name: buyer, quantity }),
       });
       const data = await res.json();
       setMsg(data.message || 'Tickets requested');
@@ -23,5 +23,29 @@ export default function Tickets() {
     }
   }
 
-  return (/* keep your JSX form code same */);
+  return (
+    <section className="card" style={{ margin: '28px 0' }}>
+      <h2>Get Tickets</h2>
+      <form onSubmit={submit} className="grid" style={{ gap: 12 }}>
+        <input
+          placeholder="Your Name"
+          value={buyer}
+          onChange={e => setBuyer(e.target.value)}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={quantity}
+          onChange={e => setQuantity(Number(e.target.value))}
+          min="1"
+          required
+        />
+        <div className="cta">
+          <button className="btn" type="submit">Request Tickets</button>
+        </div>
+      </form>
+      {msg && <p style={{ marginTop: 10 }}>{msg}</p>}
+    </section>
+  );
 }

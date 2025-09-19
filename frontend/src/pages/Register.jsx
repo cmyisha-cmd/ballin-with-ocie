@@ -22,5 +22,43 @@ export default function Register() {
     }
   }
 
-  return (/* keep your JSX form code same */);
+  return (
+    <section className="card" style={{ margin: '28px 0' }}>
+      <h2>Register to Play</h2>
+      <form onSubmit={submit} className="grid" style={{ gap: 12 }}>
+        <input
+          placeholder="Name"
+          value={form.name}
+          onChange={e => setForm({ ...form, name: e.target.value })}
+          required
+        />
+        <input
+          placeholder="Age"
+          value={form.age}
+          onChange={e => setForm({ ...form, age: e.target.value })}
+          required
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={form.shooting}
+            onChange={e => setForm({ ...form, shooting: e.target.checked })}
+          />
+          Shooting Contest
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={form.team}
+            onChange={e => setForm({ ...form, team: e.target.checked })}
+          />
+          Team Tournament
+        </label>
+        <div className="cta">
+          <button className="btn" type="submit">Register</button>
+        </div>
+      </form>
+      {msg && <p style={{ marginTop: 10 }}>{msg}</p>}
+    </section>
+  );
 }

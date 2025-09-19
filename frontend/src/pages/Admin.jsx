@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API_URL = "https://ballin-with-ocie.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Admin(){
   const [pass, setPass] = useState('');
@@ -15,76 +15,153 @@ export default function Admin(){
     try{
       const [p,s,t,tm] = await Promise.all([
         fetch(`${API_URL}/api/players`).then(r=>r.json()),
-        fetch(`${API_URL}/api/shooting`).then(r=>r.json()),
+        fetch(`${API_URL}/api/shooting`).then(r=>r.json()).catch(()=>[]),
         fetch(`${API_URL}/api/tickets`).then(r=>r.json()),
-        fetch(`${API_URL}/api/teams`).then(r=>r.json())
+        fetch(`${API_URL}/api/teams`).then(r=>r.json()).catch(()=>({A:[],B:[]}))
       ]);
-      setPlayers(p||[]); setShooting(s||[]); setTickets(t||[]); setTeams(tm||{A:[],B:[]});
-    }catch(e){ console.error(e); }
+      setPlayers(p||[]); 
+      setShooting(s||[]); 
+      setTickets(t||[]); 
+      setTeams(tm||{A:[],B:[]});
+    }catch(err){
+      console.error("Admin loadAll error:", err);
+    }
   }
-  useEffect(()=>{ if(ok){ loadAll(); const i=setInterval(loadAll, 8000); return ()=>clearInterval(i) } }, [ok]);
+
+  useEffect(()=>{ 
+    if(ok){ 
+      loadAll(); 
+      const i=setInterval(loadAll, 8000); 
+      return ()=>clearInterval(i); 
+    } 
+  }, [ok]);
 
   async function saveScore(id, score, time){
-    await fetch(`${API_URL}/api/shooting/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({score:Number(score||0), time}) });
-    loadAll();
+    try {
+      await fetch(`${API_URL}/api/shooting/${id}`, { 
+        method:'PATCH', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({score:Number(score||0), time}) 
+      });
+      loadAll();
+    } catch (err) {
+      console.error("Save score error:", err);
+    }
   }
+
   async function autoTeams(){
-    await fetch(`${API_URL}/api/teams/auto`, { method:'POST', headers:{ 'x-admin-pass': 'ocie2025' } });
-    loadAll();
+    try {
+      await fetch(`${API_URL}/api/teams/auto`, { 
+        method:'POST', 
+        headers:{ 'x-admin-pass': 'ocie2025' } 
+      });
+      loadAll();
+    } catch (err) {
+      console.error("AutoTeams error:", err);
+    }
   }
+
   async function resetData(){
+    if(!ok) return;
     if(!confirm('This will clear all data. Continue?')) return;
-    await fetch(`${API_URL}/api/reset`, { method:'POST', headers:{ 'x-admin-pass': 'ocie2025' } });
-    loadAll();
+    try {
+      const res = await fetch(`${API_URL}/api/reset`, { 
+        method:'POST', 
+        headers:{ 'x-admin-pass': 'ocie2025' } 
+      });
+      const data = await res.json();
+      alert(data.message || "Data reset complete");
+      loadAll();
+    } catch (err) {
+      console.error("Reset error:", err);
+      alert("Failed to reset data");
+    }
   }
 
   if(!ok){
     return (
       <section className="card" style={{margin:'28px 0'}}>
         <h2>Admin Login</h2>
-        <form onSubmit={(e)=>{ e.preventDefault(); if(pass==='ocie2025') setOk(true); else alert('Wrong password') }}>
-          <input type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)} />
+        <form onSubmit={(e)=>{ 
+          e.preventDefault(); 
+          if(pass==='ocie2025') setOk(true); 
+          else alert('Wrong password'); 
+        }}>
+          <input 
+            type="password" 
+            placeholder="Password" 
+            value={pass} 
+            onChange={e=>setPass(e.target.value)} 
+          />
           <div className="cta"><button className="btn">Login</button></div>
         </form>
       </section>
-    );
+    )
   }
 
   return (
     <section className="grid" style={{margin:'28px 0'}}>
+      {/* Shooting Contest */}
       <div className="card">
         <h3 style={{marginTop:0}}>Shooting Contest</h3>
         <table>
-          <thead><tr><th>Player</th><th>Score</th><th>Time (mm:ss)</th><th></th></tr></thead>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Time (mm:ss)</th>
+              <th></th>
+            </tr>
+          </thead>
           <tbody>
             {shooting.map(p=>{
-              const [mm,ss] = String(p.time||'00:00').split(':');
+              const [mm, ss] = String(p.time || '00:00').split(':');
+              const [score, setScore] = useState(p.score || 0);
+              const [min, setMin] = useState(mm || '00');
+              const [sec, setSec] = useState(ss || '00');
+
               return (
                 <tr key={p.id}>
                   <td>{p.name}</td>
-                  <td><input type="number" defaultValue={p.score||0} id={`s-${p.id}`} /></td>
+                  <td>
+                    <input 
+                      type="number" 
+                      value={score} 
+                      onChange={e=>setScore(e.target.value)} 
+                    />
+                  </td>
                   <td>
                     <div style={{display:'flex', gap:6}}>
-                      <input style={{width:70}} defaultValue={mm||'00'} id={`m-${p.id}`} placeholder="mm" />
-                      <input style={{width:70}} defaultValue={ss||'00'} id={`x-${p.id}`} placeholder="ss" />
+                      <input 
+                        style={{width:70}} 
+                        value={min} 
+                        onChange={e=>setMin(e.target.value.padStart(2,'0'))} 
+                        placeholder="mm" 
+                      />
+                      <input 
+                        style={{width:70}} 
+                        value={sec} 
+                        onChange={e=>setSec(e.target.value.padStart(2,'0'))} 
+                        placeholder="ss" 
+                      />
                     </div>
                   </td>
                   <td>
                     <button className="btn" onClick={()=>{
-                      const s = document.getElementById(`s-${p.id}`).value;
-                      const m = document.getElementById(`m-${p.id}`).value.padStart(2,'0');
-                      const x = document.getElementById(`x-${p.id}`).value.padStart(2,'0');
-                      saveScore(p.id, s, `${m}:${x}`);
+                      saveScore(p.id, score, `${min}:${sec}`)
                     }}>Save</button>
                   </td>
                 </tr>
-              );
+              )
             })}
-            {shooting.length===0 && <tr><td colSpan="4" className="muted">No shooting entries yet.</td></tr>}
+            {shooting.length===0 && (
+              <tr><td colSpan="4" className="muted">No shooting entries yet.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Teams */}
       <div className="card">
         <h3 style={{marginTop:0}}>Teams</h3>
         <div className="cta"><button className="btn" onClick={autoTeams}>Auto-Assign Teams</button></div>
@@ -94,16 +171,20 @@ export default function Admin(){
         </div>
       </div>
 
+      {/* Tickets */}
       <div className="card">
         <h3 style={{marginTop:0}}>Tickets</h3>
         <p className="muted">Total requested: <strong>{(tickets||[]).reduce((a,b)=>a+Number(b.quantity||0),0)}</strong></p>
-        <ul>{tickets.map(t=><li key={t.id}>{t.name} — {t.quantity}</li>)}</ul>
+        <ul>{tickets.map(t=><li key={t.id}>{t.buyer || t.name} — {t.quantity}</li>)}</ul>
       </div>
 
-      <div className="card">
-        <h3 style={{marginTop:0}}>Danger Zone</h3>
-        <button className="btn danger" onClick={resetData}>Remove Test Data</button>
-      </div>
+      {/* Danger Zone */}
+      {ok && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>Danger Zone</h3>
+          <button className="btn danger" onClick={resetData}>Remove All Data</button>
+        </div>
+      )}
     </section>
-  );
+  )
 }
