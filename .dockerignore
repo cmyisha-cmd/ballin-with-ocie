@@ -1,0 +1,27 @@
+# Ignore everything not needed for the backend build
+
+# Frontend files
+frontend/
+*.html
+
+# Node modules
+node_modules/
+*/node_modules/
+
+# Git and config
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+
+# Logs
+npm-debug.log
+yarn-error.log
+*.log
+
+# OS / IDE files
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
