@@ -1,39 +1,117 @@
-/* 🎉 Birthday Wall Styling (Basketball Themed) */
+/* 🎉 Birthday Wall Styling — Dark Theme */
 
-/* Wall background */
-body {
-  background: url('/court-texture.png') center/cover fixed, #000;
-  font-family: 'Roboto', sans-serif;
+/* Page wrapper */
+.birthday-wall {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-/* Card for each message */
-.message-card {
+/* Header */
+.wall-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.wall-header h2 {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  color: #e0e0e0;
+}
+.wall-header .muted {
+  color: #aaa;
+  font-size: 0.95rem;
+}
+
+/* Post form card (smaller than messages) */
+.post-form {
   background: #1e1e2f;
   border-radius: 12px;
   padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-  transition: transform 0.2s;
-}
-.message-card:hover {
-  transform: translateY(-2px);
+  margin-bottom: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Header (name + admin controls) */
+/* Inputs */
+input, textarea {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+input::placeholder, textarea::placeholder {
+  color: #bbb;
+}
+
+/* Buttons */
+.btn {
+  background: #6a0dad;
+  border: none;
+  color: white;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover {
+  background: #8e24aa;
+  color: #fff;
+}
+.btn.danger {
+  background: #c62828;
+}
+.btn.danger:hover {
+  background: #e53935;
+}
+
+/* Emoji buttons */
+.emoji-row {
+  margin-top: 8px;
+}
+.emoji-row button {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #e0e0e0; /* visible counters */
+  font-weight: 600;
+  transition: transform 0.2s, color 0.2s;
+}
+.emoji-row button:hover {
+  transform: scale(1.2);
+  color: #b388ff;
+}
+.emoji-row .count {
+  margin-left: 4px;
+  font-size: 0.9rem;
+}
+
+/* Messages */
+.message-card {
+  background: #121212;
+  border: 1px solid #3c2a57;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
 .message-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
-  color: #ffd700; /* gold */
+  color: #fff;
   margin-bottom: 8px;
 }
-
-/* Main text */
 .message-text {
   font-size: 1.1rem;
   margin: 12px 0;
-  color: #fff;
+  color: #f0f0f0;
 }
 
 /* Replies */
@@ -45,52 +123,8 @@ body {
 .reply {
   font-size: 0.95rem;
   margin-top: 6px;
-  background: rgba(255,255,255,0.05);
+  background: #2a2a2a;
   padding: 6px 10px;
   border-radius: 8px;
   color: #ddd;
-}
-
-/* Buttons */
-.btn {
-  background: linear-gradient(90deg, #6a0dad, #000);
-  border: 2px solid #ffd700;
-  color: white;
-  font-weight: bold;
-  padding: 10px 20px;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn:hover {
-  background: #ffd700;
-  color: black;
-}
-
-/* Emoji buttons (reactions) */
-.emoji-row button {
-  font-size: 1.2rem;
-  margin-right: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.emoji-row button:hover {
-  transform: scale(1.2);
-}
-
-/* Section headings */
-h2, h3 {
-  font-family: 'Bangers', cursive;
-  letter-spacing: 1px;
-  color: #ffd700;
-}
-
-/* Replies heading */
-.replies strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.95rem;
-  color: #ccc;
 }
