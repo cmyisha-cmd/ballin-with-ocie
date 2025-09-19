@@ -1,0 +1,96 @@
+/* 🎉 Birthday Wall Styling (Basketball Themed) */
+
+/* Wall background */
+body {
+  background: url('/court-texture.png') center/cover fixed, #000;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Card for each message */
+.message-card {
+  background: #1e1e2f;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  transition: transform 0.2s;
+}
+.message-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Header (name + admin controls) */
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  color: #ffd700; /* gold */
+  margin-bottom: 8px;
+}
+
+/* Main text */
+.message-text {
+  font-size: 1.1rem;
+  margin: 12px 0;
+  color: #fff;
+}
+
+/* Replies */
+.replies {
+  margin-top: 10px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(255,255,255,0.1);
+}
+.reply {
+  font-size: 0.95rem;
+  margin-top: 6px;
+  background: rgba(255,255,255,0.05);
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #ddd;
+}
+
+/* Buttons */
+.btn {
+  background: linear-gradient(90deg, #6a0dad, #000);
+  border: 2px solid #ffd700;
+  color: white;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover {
+  background: #ffd700;
+  color: black;
+}
+
+/* Emoji buttons (reactions) */
+.emoji-row button {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.emoji-row button:hover {
+  transform: scale(1.2);
+}
+
+/* Section headings */
+h2, h3 {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 1px;
+  color: #ffd700;
+}
+
+/* Replies heading */
+.replies strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+  color: #ccc;
+}
