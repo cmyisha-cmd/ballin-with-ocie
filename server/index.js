@@ -49,6 +49,17 @@ async function migrate() {
 }
 await migrate();
 
+// Manual migration trigger
+app.post('/api/migrate', async (req, res) => {
+  try {
+    await migrate()
+    res.json({ message: 'Migration complete' })
+  } catch (e) {
+    console.error('Migration failed', e)
+    res.status(500).json({ message: 'Migration failed', error: e.message })
+  }
+})
+
 function ok(res, data) { return res.json(data); }
 function bad(res, msg='Bad Request', code=400){ return res.status(code).json({message: msg}) }
 function notFound(res, msg='Not Found'){ return res.status(404).json({message: msg}) }
