@@ -157,21 +157,37 @@ app.post('/api/messages/:id/react', async (req,res)=>{
     ok(res, rows[0]);
   }catch(e){ console.error(e); bad(res,'React failed',500); }
 });
+
+// ✅ Patched Replies with safe JSON parsing
 app.post('/api/messages/:id/reply', async (req,res)=>{
   try{
     const id = Number(req.params.id);
     const { name, text } = req.body || {};
     if(!name || !text) return bad(res, 'Name and text required');
+
     const cur = await pool.query(`SELECT replies FROM messages WHERE id=$1`, [id]);
     if(!cur.rows.length) return notFound(res);
-    const replies = cur.rows[0].replies || [];
+
+    let replies = cur.rows[0].replies;
+
+    // Handle old schema (text) or null
+    if (typeof replies === 'string') {
+      try { replies = JSON.parse(replies) } catch { replies = [] }
+    }
+    if (!Array.isArray(replies)) replies = [];
+
     replies.push({ id: Date.now(), name, text });
-    const { rows } = await pool.query(`UPDATE messages SET replies=$1 WHERE id=$2 RETURNING *`, [replies, id]);
+
+    const { rows } = await pool.query(
+      `UPDATE messages SET replies=$1 WHERE id=$2 RETURNING *`,
+      [JSON.stringify(replies), id]
+    );
+
     ok(res, rows[0]);
   }catch(e){ console.error(e); bad(res,'Reply failed',500); }
 });
 
-// ✅ NEW: Delete message
+// Delete message (admin only)
 app.delete('/api/messages/:id', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
