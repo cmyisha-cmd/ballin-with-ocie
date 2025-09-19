@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import '../birthdaywall.css'   // ✅ corrected path (was ./birthdaywall.css)
+import '../birthdaywall.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ballin-with-ocie.onrender.com'
 const EMOJIS = ['🎉','🎂','🏀','🔥','👍','❤️','🙌']
@@ -56,38 +56,42 @@ export default function BirthdayWall(){
   }
 
   return (
-    <section style={{margin:'28px 0'}}>
-      <div className="card" style={{marginBottom:16}}>
-        <h2 style={{marginTop:0}}>Birthday Wall 🎉</h2>
+    <section className="birthday-wall">
+      <header className="wall-header">
+        <h2>Birthday Wall 🎉</h2>
+        <p className="muted">Leave a message for Ocie’s 13th!</p>
+      </header>
+
+      {/* Post Form */}
+      <div className="post-form card">
         <form onSubmit={post}>
-          <label>Your Name</label>
           <input 
+            placeholder="Your Name" 
             value={form.name} 
             onChange={e=>setForm({...form, name:e.target.value})} 
             required 
           />
-          <label>Message</label>
           <textarea 
+            placeholder="Write your birthday message…" 
             value={form.text} 
             onChange={e=>setForm({...form, text:e.target.value})} 
             required 
-            placeholder="Type your message, add emojis below…" 
           />
-          <div className="emoji-row" style={{marginTop:8}}>
-            {EMOJIS.map(e=>(<button key={e} type="button" onClick={()=>setForm({...form, text: form.text + e})}>{e}</button>))}
+          <div className="emoji-row">
+            {EMOJIS.map(e=>(
+              <button key={e} type="button" onClick={()=>setForm({...form, text: form.text + e})}>
+                {e}
+              </button>
+            ))}
           </div>
           <div className="cta">
-            <button className="btn" type="submit">📩 Post Message</button>
+            <button className="btn" type="submit">📩 Post</button>
           </div>
         </form>
       </div>
 
-      <div className="card" style={{marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <h3 style={{margin:0}}>Messages</h3>
-        <AdminBox admin={admin} setAdmin={setAdmin} adminPass={adminPass} setAdminPass={setAdminPass} />
-      </div>
-
-      <div>
+      {/* Messages */}
+      <div className="messages">
         {list.map(msg=> (
           <div key={msg.id} className="message-card">
             <div className="message-header">
@@ -98,7 +102,7 @@ export default function BirthdayWall(){
             <div className="emoji-row">
               {EMOJIS.map(e=>(
                 <button key={e} type="button" onClick={()=>react(msg.id, e)}>
-                  {e} {msg.reactions?.[e]||0}
+                  {e} <span className="count">{msg.reactions?.[e]||0}</span>
                 </button>
               ))}
             </div>
@@ -114,6 +118,11 @@ export default function BirthdayWall(){
         ))}
         {list.length===0 && <div className="muted">No messages yet. Be the first to post!</div>}
       </div>
+
+      {/* Admin box at bottom */}
+      <div className="admin-box">
+        <AdminBox admin={admin} setAdmin={setAdmin} adminPass={adminPass} setAdminPass={setAdminPass} />
+      </div>
     </section>
   )
 }
@@ -121,25 +130,22 @@ export default function BirthdayWall(){
 function AdminBox({admin, setAdmin, adminPass, setAdminPass}){
   if(admin) return <div className="pill">Admin mode</div>
   return (
-    <div style={{display:'flex', gap:8, alignItems:'center', marginTop:8, width:'100%'}}>
-      <form 
-        onSubmit={(e)=>{ 
-          e.preventDefault(); 
-          if(adminPass==='ocie2025') setAdmin(true); 
-          else alert('Wrong password'); 
-        }} 
-        style={{display:'flex', gap:8, flex:1}}
-      >
-        <input 
-          style={{flex:1}} 
-          placeholder="Admin password" 
-          type="password" 
-          value={adminPass} 
-          onChange={e=>setAdminPass(e.target.value)} 
-        />
-        <button className="btn" type="submit">Login</button>
-      </form>
-    </div>
+    <form 
+      onSubmit={(e)=>{ 
+        e.preventDefault(); 
+        if(adminPass==='ocie2025') setAdmin(true); 
+        else alert('Wrong password'); 
+      }} 
+      style={{display:'flex', gap:8, marginTop:16}}
+    >
+      <input 
+        placeholder="Admin password" 
+        type="password" 
+        value={adminPass} 
+        onChange={e=>setAdminPass(e.target.value)} 
+      />
+      <button className="btn" type="submit">Login</button>
+    </form>
   )
 }
 
