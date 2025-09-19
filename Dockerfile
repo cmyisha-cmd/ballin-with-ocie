@@ -1,19 +1,19 @@
-# Use Node 18 as the base
 FROM node:18
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first
-COPY package*.json ./
+# Copy server package files
+COPY server/package*.json ./server/
 
 # Install dependencies
+WORKDIR /app/server
 RUN npm install --production
 
 # Copy the rest of the server code
-COPY . .
+COPY server ./ 
 
-# Expose port 3001 (Render sets $PORT internally)
+# Expose port (Render injects PORT)
 EXPOSE 3001
 
 # Start the server
