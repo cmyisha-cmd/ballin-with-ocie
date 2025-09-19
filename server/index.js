@@ -189,4 +189,29 @@ app.post('/api/reset', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Reset failed',500); }
 });
 
+// ⚠️ Reset database schema (drops + recreates all tables)
+// Only allow with admin password for safety
+app.get('/api/reset-schema', async (req, res) => {
+  try {
+    if (req.headers['x-admin-pass'] !== 'ocie2025') {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Drop old tables
+    await pool.query(`
+      DROP TABLE IF EXISTS players CASCADE;
+      DROP TABLE IF EXISTS tickets CASCADE;
+      DROP TABLE IF EXISTS messages CASCADE;
+    `);
+
+    // Recreate using migrate()
+    await migrate();
+
+    res.json({ message: 'Schema reset complete' });
+  } catch (e) {
+    console.error('Reset schema failed', e);
+    res.status(500).json({ message: 'Schema reset failed', error: e.message });
+  }
+});
+
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
