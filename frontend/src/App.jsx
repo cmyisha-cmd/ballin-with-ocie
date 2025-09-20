@@ -10,6 +10,14 @@ import Leaderboard from './pages/Leaderboard'
 export default function App(){
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // ✅ Ticker messages here
+  const tickerMessages = [
+    "P.B. Edwards Jr. Gymnasium • Sept 27, 2025 • 2:00 PM",
+    "Doors open at 1:00 PM — Arrive early!",
+    "Register now for the Shooting Contest 🏀",
+    "Happy 13th Birthday Ocie! 🎉"
+  ];
+
   return (
     <>
       <header className="site-header">
@@ -61,10 +69,14 @@ export default function App(){
         </Routes>
       </main>
 
+      {/* ✅ ESPN-style ticker footer */}
       <footer>
-        <div className="wrap" style={{padding:'18px 0', display:'flex', justifyContent:'space-between', gap:12, flexWrap:'wrap'}}>
-          <div>© 2025 Ballin' with Ocie</div>
-          <div className="muted">P.B. Edwards Jr. Gymnasium • Sept 27, 2025 • 2:00 PM</div>
+        <div className="ticker">
+          <div className="ticker__wrap">
+            {tickerMessages.map((msg, i) => (
+              <div key={i} className="ticker__item">{msg}</div>
+            ))}
+          </div>
         </div>
       </footer>
     </>
