@@ -12,8 +12,8 @@ export default function App(){
 
   // ✅ Ticker messages
   const tickerMessages = [
-    "P.B. Edwards Jr. Gymnasium • Sept 27, 2025 • 2:00 PM",
-    "Doors open at 1:00 PM — Arrive early!",
+    "P.B. Edwards Jr. Gymnasium • Saturday, Sept 27, 2025 • 2:00 PM",
+    "Doors open at 2:00 PM — Arrive early!",
     "Register now for the Shooting Contest 🏀",
     "Happy 13th Birthday Ocie! 🎉"
   ];
