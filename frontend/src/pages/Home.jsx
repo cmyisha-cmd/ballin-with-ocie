@@ -1,16 +1,15 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import logo from '../assets/ocie-logo.png'   // ✅ correct relative path
 
 export default function Home(){
   return (
     <section className="hero">
 
-      {/* ✅ Graffiti Logo as the only H1 */}
+      {/* ✅ Graffiti Logo from public/ folder */}
       <div style={{textAlign:'center', marginBottom:'20px'}}>
         <h1>
           <img 
-            src={logo} 
+            src="/ocie-logo.png" 
             alt="Ballin' With Ocie: 13th Edition" 
             style={{
               maxWidth: '420px',
