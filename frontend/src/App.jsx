@@ -1,4 +1,4 @@
-import React, { useState } from 'react' 
+import React, { useState, useRef, useEffect } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Register from './pages/Register'
@@ -10,13 +10,26 @@ import Leaderboard from './pages/Leaderboard'
 export default function App(){
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // ✅ Ticker messages here
+  // ✅ Ticker messages
   const tickerMessages = [
-    "P.B. Edwards Jr. Gymnasium • Saturday, Sept 27, 2025 • 2:00 PM",
-    "Doors open at 2:00 PM — Arrive early!",
+    "P.B. Edwards Jr. Gymnasium • Sept 27, 2025 • 2:00 PM",
+    "Doors open at 1:00 PM — Arrive early!",
     "Register now for the Shooting Contest 🏀",
     "Happy 13th Birthday Ocie! 🎉"
   ];
+
+  // ✅ Dynamic ticker speed
+  const tickerRef = useRef(null);
+  const [duration, setDuration] = useState(15); // default fallback
+
+  useEffect(() => {
+    if (tickerRef.current) {
+      const width = tickerRef.current.scrollWidth;
+      // adjust speed based on total content width (more text → longer duration)
+      const speed = Math.max(10, width / 100); // 100px per second
+      setDuration(speed);
+    }
+  }, [tickerMessages]);
 
   return (
     <>
@@ -69,18 +82,22 @@ export default function App(){
         </Routes>
       </main>
 
-      {/* ✅ ESPN-style ticker footer */}
-     <footer>
-  <div className="ticker">
-    <div className="ticker__wrap">
-      {tickerMessages.map((msg, i) => (
-        <div key={i} className="ticker__item">
-          🏀 {msg}
+      {/* ✅ ESPN-style ticker footer with dynamic speed */}
+      <footer>
+        <div className="ticker">
+          <div 
+            className="ticker__wrap" 
+            ref={tickerRef}
+            style={{ animationDuration: `${duration}s` }}
+          >
+            {tickerMessages.map((msg, i) => (
+              <div key={i} className="ticker__item">
+                🏀 {msg}
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
-</footer>
+      </footer>
     </>
   )
 }
