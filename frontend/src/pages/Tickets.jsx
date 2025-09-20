@@ -12,7 +12,7 @@ export default function Tickets(){
     try{
       const r = await fetch(`${API_URL}/api/tickets`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, quantity }) })
       const data = await r.json()
-      setMsg(data.message || 'Tickets requested')
+      setMsg(data.message || `You requested ${quantity} ticket${quantity > 1 ? 's' : ''} for ${name}.`)
       setName(''); setQuantity(1)
     }catch{ setMsg('Error requesting tickets') }
   }
