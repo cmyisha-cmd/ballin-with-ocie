@@ -1,28 +1,113 @@
-body{margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;background:#0b0b0b;color:#fff}
-.wrap{max-width:1024px;margin:0 auto;padding:0 16px}
-.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.brand{display:flex;gap:10px;align-items:center}
-.ball{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff7300,#a100ff)}
-nav{display:flex;gap:12px}
-a{color:#fff;text-decoration:none}
-.hero{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:24px 0}
-.btn{background:#7c3aed;padding:10px 14px;border-radius:10px;box-shadow:0 2px 8px #0004}
-.btn:hover{background:#6d28d9}
-.card{background:#111418;border:1px solid #ffffff12;border-radius:14px;padding:16px}
-.pill{background:#ffffff12;padding:4px 8px;border-radius:999px}
-.grid{display:grid;gap:12px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid #ffffff12}
-.menu-toggle{display:none;font-size:24px;background:none;border:none;color:#fff}
-@media(max-width:768px){
-  .hero{flex-direction:column;align-items:flex-start}
-  nav{display:none;position:absolute;right:16px;top:56px;background:#111418;border:1px solid #ffffff22;border-radius:12px;padding:12px;flex-direction:column}
-  nav.open{display:flex}
-  .menu-toggle{display:block}
+body {
+  margin: 0;
+  font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial;
+  background: #0b0b0b;
+  color: #fff;
 }
-.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none}
 
-/* Fix button layout on mobile */
+.wrap {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ball {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ff7300, #a100ff);
+}
+
+/* ✅ Nav links desktop */
+nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.hero {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.btn {
+  background: #7c3aed;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0004;
+}
+
+.btn:hover {
+  background: #6d28d9;
+}
+
+.card {
+  background: #111418;
+  border: 1px solid #ffffff12;
+  border-radius: 14px;
+  padding: 20px;   /* ✅ more breathing room */
+}
+
+.pill {
+  background: #ffffff12;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid #ffffff12;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+}
+
+/* ✅ Fix button layout on mobile */
 .cta {
   display: flex;
   flex-wrap: wrap;        /* allow wrapping */
@@ -36,8 +121,10 @@ th,td{padding:8px;border-bottom:1px solid #ffffff12}
   text-align: center;
 }
 
-/* Ensure inputs fit nicely inside cards */
-input, textarea, select {
+/* ✅ Ensure inputs fit nicely inside cards */
+input,
+textarea,
+select {
   background: #2a2a2a;
   border: 1px solid #444;
   color: #fff;
@@ -45,18 +132,62 @@ input, textarea, select {
   padding: 10px 12px;
   width: 100%;
   margin-bottom: 14px;
-  box-sizing: border-box;   /* ✅ prevents overlap */
+  box-sizing: border-box;
 }
 
-/* Make card content breathe */
-.card {
-  padding: 20px;            /* ✅ ensures space inside border */
-}
-
-/* Labels consistent */
+/* ✅ Labels consistent */
 label {
   display: block;
   margin: 6px 0 4px;
   color: #ccc;
   font-size: 0.9rem;
+}
+
+/* ✅ Site Header */
+.site-header {
+  background: black;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ✅ Mobile styles */
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    position: absolute;
+    top: 70px;   /* below header */
+    right: 16px;
+    background: #111418;
+    border: 1px solid #ffffff22;
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 1000;
+  }
+
+  nav.open {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .menu-overlay {
+    display: block;
+  }
 }
