@@ -19,7 +19,7 @@ export default function Tickets(){
 
   return (
     <section className="card" style={{margin:'28px 0'}}>
-      <h2>Get Tickets</h2>
+      <h2>Get Non- Player Tickets</h2>
       <form onSubmit={submit} className="grid" style={{gap:12}}>
         <input placeholder="Your Name" value={name} onChange={e=>setName(e.target.value)} required/>
         <input type="number" min="1" placeholder="Quantity" value={quantity} onChange={e=>setQuantity(Number(e.target.value)||1)} required/>
