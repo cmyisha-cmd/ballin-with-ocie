@@ -111,8 +111,20 @@ export default function Admin(){
         <h3 style={{marginTop:0}}>Teams</h3>
         <div className="cta"><button className="btn" onClick={autoTeams}>Auto-Assign Teams</button></div>
         <div className="grid" style={{marginTop:10}}>
-          <div><h4>Team A</h4><ul>{teams.A.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
-          <div><h4>Team B</h4><ul>{teams.B.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
+          <div><h4>Team A</h4>
+          <input type='text' id='newA' placeholder='New member name' />
+          <button className='btn' onClick={()=>{
+            const n=document.getElementById('newA').value;
+            if(!n) return;
+            fetch(`${API_URL}/api/teams/A`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},body:JSON.stringify({name:n})}).then(loadAll)
+          }}>Add to Team A</button><ul>{teams.A.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
+          <div><h4>Team B</h4>
+          <input type='text' id='newB' placeholder='New member name' />
+          <button className='btn' onClick={()=>{
+            const n=document.getElementById('newB').value;
+            if(!n) return;
+            fetch(`${API_URL}/api/teams/B`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},body:JSON.stringify({name:n})}).then(loadAll)
+          }}>Add to Team B</button><ul>{teams.B.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
         </div>
       </div>
 
