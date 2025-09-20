@@ -96,7 +96,10 @@ export default function Admin(){
                       saveScore(p.id, s, `${m}:${x}`)
                     }}>Save</button>
                     <button className='btn danger' onClick={()=>{
-                      fetch(`${API_URL}/api/shooting/${p.id}`,{method:'DELETE',headers:{'x-admin-pass':'ocie2025'}}).then(loadAll)
+                      fetch(`${API_URL}/api/shooting/${p.id}`, {
+                        method:'DELETE',
+                        headers:{'x-admin-pass':'ocie2025'}
+                      }).then(()=>loadAll())
                     }}>Delete</button>
                   </td>
                 </tr>
@@ -116,15 +119,63 @@ export default function Admin(){
           <button className='btn' onClick={()=>{
             const n=document.getElementById('newA').value;
             if(!n) return;
-            fetch(`${API_URL}/api/teams/A`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},body:JSON.stringify({name:n})}).then(loadAll)
-          }}>Add to Team A</button><ul>{teams.A.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
+            fetch(`${API_URL}/api/teams/A`,{
+              method:'POST',
+              headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},
+              body:JSON.stringify({name:n})
+            }).then(()=>loadAll())
+          }}>Add to Team A</button>
+          <ul>{teams.A.map(t=>
+            <li key={t.id}>
+              {t.name}
+              <button className='btn danger' onClick={()=>{
+                fetch(`${API_URL}/api/teams/A/${t.id}`,{
+                  method:'DELETE',
+                  headers:{'x-admin-pass':'ocie2025'}
+                }).then(()=>loadAll())
+              }}>Delete</button>
+              <input type='text' defaultValue={t.name} id={`editA-${t.id}`} />
+              <button className='btn' onClick={()=>{
+                const newName=document.getElementById(`editA-${t.id}`).value;
+                fetch(`${API_URL}/api/teams/A/${t.id}`,{
+                  method:'PATCH',
+                  headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},
+                  body:JSON.stringify({name:newName})
+                }).then(()=>loadAll())
+              }}>Update</button>
+            </li>
+          )}</ul></div>
           <div><h4>Team B</h4>
           <input type='text' id='newB' placeholder='New member name' />
           <button className='btn' onClick={()=>{
             const n=document.getElementById('newB').value;
             if(!n) return;
-            fetch(`${API_URL}/api/teams/B`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},body:JSON.stringify({name:n})}).then(loadAll)
-          }}>Add to Team B</button><ul>{teams.B.map(t=><li key={t.id}>{t.name}</li>)}</ul></div>
+            fetch(`${API_URL}/api/teams/B`,{
+              method:'POST',
+              headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},
+              body:JSON.stringify({name:n})
+            }).then(()=>loadAll())
+          }}>Add to Team B</button>
+          <ul>{teams.B.map(t=>
+            <li key={t.id}>
+              {t.name}
+              <button className='btn danger' onClick={()=>{
+                fetch(`${API_URL}/api/teams/B/${t.id}`,{
+                  method:'DELETE',
+                  headers:{'x-admin-pass':'ocie2025'}
+                }).then(()=>loadAll())
+              }}>Delete</button>
+              <input type='text' defaultValue={t.name} id={`editB-${t.id}`} />
+              <button className='btn' onClick={()=>{
+                const newName=document.getElementById(`editB-${t.id}`).value;
+                fetch(`${API_URL}/api/teams/B/${t.id}`,{
+                  method:'PATCH',
+                  headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},
+                  body:JSON.stringify({name:newName})
+                }).then(()=>loadAll())
+              }}>Update</button>
+            </li>
+          )}</ul></div>
         </div>
       </div>
 
@@ -133,10 +184,23 @@ export default function Admin(){
         <p className="muted">Total requested: <strong>{(tickets||[]).reduce((a,b)=>a+Number(b.quantity||0),0)}</strong></p>
         <ul>{tickets.map(t=>(
           <li key={t.id}>
-            {t.name} — <input type='number' defaultValue={t.quantity} style={{width:60}} id={`tick-${t.id}`} />
+            {t.name} — 
+            <input 
+              type='number' 
+              step='1' 
+              min='1' 
+              max='20'
+              defaultValue={t.quantity} 
+              style={{width:60}} 
+              id={`tick-${t.id}`} 
+            />
             <button className='btn' onClick={()=>{
               const q = document.getElementById(`tick-${t.id}`).value;
-              fetch(`${API_URL}/api/tickets/${t.id}`,{method:'PATCH',headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},body:JSON.stringify({quantity:q})}).then(loadAll)
+              fetch(`${API_URL}/api/tickets/${t.id}`,{
+                method:'PATCH',
+                headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},
+                body:JSON.stringify({quantity:q})
+              }).then(()=>loadAll())
             }}>Update</button>
           </li>
         ))}</ul>
