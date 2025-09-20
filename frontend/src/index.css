@@ -191,3 +191,40 @@ label {
     display: block;
   }
 }
+
+/* ✅ ESPN-style broadcast ticker */
+.ticker {
+  position: relative;
+  overflow: hidden;
+  height: 34px;
+  background: #111;
+  border-top: 2px solid #7c3aed;   /* purple highlight bar */
+  display: flex;
+  align-items: center;
+}
+
+.ticker__wrap {
+  display: flex;
+  gap: 60px;                       /* spacing between items */
+  animation: ticker 25s linear infinite;
+}
+
+.ticker__item {
+  flex-shrink: 0;
+  color: #fff;
+  font-weight: bold;
+  white-space: nowrap;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ✅ keyframes for scrolling */
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
