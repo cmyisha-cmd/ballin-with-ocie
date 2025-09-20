@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react' 
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Register from './pages/Register'
@@ -12,16 +12,30 @@ export default function App(){
 
   return (
     <>
-      <header>
-        <div className="wrap bar">
+      <header className="site-header">
+        <div className="wrap bar header-inner">
+
+          {/* ✅ Logo on the left */}
           <div className="brand">
-            <div className="ball"></div>
-            <div>
-              <div style={{fontSize:12, opacity:.8}}>Ballin' with Ocie</div>
-              <div style={{fontSize:18, letterSpacing:1}}>13th Edition</div>
-            </div>
+            <Link to="/" onClick={()=>setMenuOpen(false)}>
+              <img 
+                src="/ocie-logo.png" 
+                alt="Ballin' With Ocie: 13th Edition" 
+                style={{height:'60px', width:'auto'}}
+              />
+            </Link>
           </div>
-          <button className="menu-toggle" onClick={()=>setMenuOpen(!menuOpen)} aria-label="Toggle menu">☰</button>
+
+          {/* Hamburger (mobile) */}
+          <button 
+            className="menu-toggle" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            ☰
+          </button>
+
+          {/* Nav links */}
           <nav className={menuOpen ? 'open' : ''}>
             <Link to="/" onClick={()=>setMenuOpen(false)}>Home</Link>
             <Link to="/register" onClick={()=>setMenuOpen(false)}>Register</Link>
@@ -33,7 +47,8 @@ export default function App(){
         </div>
       </header>
 
-      {menuOpen && <div className="menu-overlay" onClick={()=>setMenuOpen(false)} />}
+      {/* Mobile overlay */}
+      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
 
       <main className="wrap">
         <Routes>
