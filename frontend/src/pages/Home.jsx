@@ -30,8 +30,10 @@ export default function Home(){
           margin:'0 auto'
         }}
       >
-        Register for the Shooting Contest and Team Tournament, secure tickets, and leave a birthday message. 
-        Track live scores and brackets during the event.
+        Come out and help us celebrate Ocie!!!  
+        Register to play or get tickets to come to watch and cheer.  
+        Don't forget to drop the Birthday Boy a message.
+
       </p>
 
       <div 
