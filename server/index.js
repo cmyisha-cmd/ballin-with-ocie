@@ -226,3 +226,46 @@ app.get('/api/reset-schema', async (req,res)=>{
 
 // Start server
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
+
+
+// Delete a team member
+app.delete("/api/teams/:team/:id", (req,res)=>{
+  const { team, id } = req.params;
+  if(!req.headers['x-admin-pass'] || req.headers['x-admin-pass']!=='ocie2025'){
+    return res.status(403).json({error:"Unauthorized"});
+  }
+  if(db.teams && db.teams[team]){
+    db.teams[team] = db.teams[team].filter(p=>String(p.id)!==String(id));
+  }
+  res.json({success:true, teams:db.teams});
+});
+
+
+// Add a new team member
+app.post("/api/teams/:team", (req,res)=>{
+  const { team } = req.params;
+  const { name } = req.body;
+  if(!req.headers['x-admin-pass'] || req.headers['x-admin-pass']!=='ocie2025'){
+    return res.status(403).json({error:"Unauthorized"});
+  }
+  if(!db.teams) db.teams = {A:[],B:[]};
+  const newMember = { id: Date.now(), name };
+  if(db.teams[team]) db.teams[team].push(newMember);
+  res.json({success:true, member:newMember, teams:db.teams});
+});
+
+
+// Rename a team member
+app.patch("/api/teams/:team/:id", (req,res)=>{
+  const { team, id } = req.params;
+  const { name } = req.body;
+  if(!req.headers['x-admin-pass'] || req.headers['x-admin-pass']!=='ocie2025'){
+    return res.status(403).json({error:"Unauthorized"});
+  }
+  if(db.teams && db.teams[team]){
+    let member = db.teams[team].find(p=>String(p.id)===String(id));
+    if(member){ member.name = name || member.name; }
+    return res.json({success:true, teams:db.teams});
+  }
+  res.json({error:"Not found"});
+});
