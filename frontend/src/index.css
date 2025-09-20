@@ -192,20 +192,22 @@ label {
   }
 }
 
-/* ✅ ESPN-style broadcast ticker */
+/* 🏀 NBA-style broadcast ticker */
 .ticker {
   position: relative;
   overflow: hidden;
-  height: 34px;
-  background: #111;
-  border-top: 2px solid #7c3aed;   /* purple highlight bar */
+  height: 40px;
+  background: linear-gradient(90deg, #3b0a67, #6d28d9); /* deep purple gradient */
+  border-top: 3px solid #a855f7;   /* lighter purple accent */
+  border-bottom: 3px solid #a855f7;
   display: flex;
   align-items: center;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.6);
 }
 
 .ticker__wrap {
   display: flex;
-  gap: 60px;                       /* spacing between items */
+  gap: 80px;                       /* spacing between items */
   animation: ticker 25s linear infinite;
 }
 
@@ -214,12 +216,17 @@ label {
   color: #fff;
   font-weight: bold;
   white-space: nowrap;
-  font-size: 1rem;
+  font-size: 1.1rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 12px rgba(168,85,247,0.6);
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;       /* space between 🏀 and text */
 }
 
-/* ✅ keyframes for scrolling */
+/* ✅ smooth scroll animation */
 @keyframes ticker {
   0% {
     transform: translateX(100%);
