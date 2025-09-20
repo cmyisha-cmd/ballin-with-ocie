@@ -95,6 +95,9 @@ export default function Admin(){
                       const x = document.getElementById(`x-${p.id}`).value.padStart(2,'0')
                       saveScore(p.id, s, `${m}:${x}`)
                     }}>Save</button>
+                    <button className='btn danger' onClick={()=>{
+                      fetch(`${API_URL}/api/shooting/${p.id}`,{method:'DELETE',headers:{'x-admin-pass':'ocie2025'}}).then(loadAll)
+                    }}>Delete</button>
                   </td>
                 </tr>
               )
@@ -116,7 +119,15 @@ export default function Admin(){
       <div className="card">
         <h3 style={{marginTop:0}}>Tickets</h3>
         <p className="muted">Total requested: <strong>{(tickets||[]).reduce((a,b)=>a+Number(b.quantity||0),0)}</strong></p>
-        <ul>{tickets.map(t=><li key={t.id}>{t.name} — {t.quantity}</li>)}</ul>
+        <ul>{tickets.map(t=>(
+          <li key={t.id}>
+            {t.name} — <input type='number' defaultValue={t.quantity} style={{width:60}} id={`tick-${t.id}`} />
+            <button className='btn' onClick={()=>{
+              const q = document.getElementById(`tick-${t.id}`).value;
+              fetch(`${API_URL}/api/tickets/${t.id}`,{method:'PATCH',headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},body:JSON.stringify({quantity:q})}).then(loadAll)
+            }}>Update</button>
+          </li>
+        ))}</ul>
       </div>
 
       <div className="card">
