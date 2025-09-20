@@ -208,7 +208,9 @@ label {
 .ticker__wrap {
   display: flex;
   gap: 80px;                       /* spacing between items */
-  animation: ticker 25s linear infinite;
+  animation-name: ticker;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 .ticker__item {
@@ -229,7 +231,7 @@ label {
 /* ✅ smooth scroll animation */
 @keyframes ticker {
   0% {
-    transform: translateX(0%);
+    transform: translateX(100%);
   }
   100% {
     transform: translateX(-100%);
