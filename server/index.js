@@ -194,7 +194,10 @@ app.get('/api/bracket', async (req,res)=>{
     const semi = rows.filter(r=>r.round==='semi');
     const final = rows.filter(r=>r.round==='final');
     ok(res,{ semi, final });
-  }catch(e){ console.error(e); bad(res,'Failed to load bracket',500); }
+  }catch(e){
+    console.error(e);
+    ok(res,{ semi:[], final:[] });
+  }
 });
 app.post('/api/bracket/generate', async (req,res)=>{
   try{
@@ -214,11 +217,10 @@ app.post('/api/bracket/generate', async (req,res)=>{
     for(let i=0;i<teams.length;i+=2){
       const team1 = teams[i];
       const team2 = teams[i+1] || 'BYE';
-      if(teams.length === 2){
-        games.push({ round:'final', team1, team2 });
-      } else {
-        games.push({ round:'semi', team1, team2 });
-      }
+      games.push({
+        round: teams.length === 2 ? 'final' : 'semi',
+        team1, team2
+      });
     }
 
     for(const g of games){
