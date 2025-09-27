@@ -16,7 +16,11 @@ export default function Bracket(){
     }
   }
 
-  useEffect(()=>{ loadBracket(); },[]);
+  useEffect(()=>{
+    loadBracket();
+    const interval = setInterval(loadBracket, 10000); // refresh every 10s
+    return ()=> clearInterval(interval);
+  },[]);
 
   return (
     <section className="card" style={{margin:'28px 0'}}>
