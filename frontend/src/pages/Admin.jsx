@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ballin-with-ocie.onrender.com';
 
@@ -145,16 +146,6 @@ export default function Admin(){
           {Object.keys(teams).map(g=>(
             <div key={g}>
               <h4>Team {g}</h4>
-              <input type="text" id={`new-${g}`} placeholder="New member name" />
-              <button className="btn" onClick={()=>{
-                const n=document.getElementById(`new-${g}`).value;
-                if(!n) return;
-                fetch(`${API_URL}/api/teams/${g}`,{
-                  method:'POST',
-                  headers:{'Content-Type':'application/json','x-admin-pass':'ocie2025'},
-                  body: JSON.stringify({name:n})
-                }).then(loadAll)
-              }}>Add to Team {g}</button>
               <ul>
                 {teams[g].map(t=>(
                   <li key={t.id}>
@@ -201,6 +192,7 @@ export default function Admin(){
         <div className="cta">
           <button className="btn" onClick={generateBracket}>Generate Bracket</button>
           <button className="btn" onClick={loadAll}>Refresh Bracket</button>
+          <Link to="/bracket"><button className="btn">View Bracket</button></Link>
         </div>
         {['semi','final'].map(r=>(
           <div key={r}>
