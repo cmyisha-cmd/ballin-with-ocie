@@ -46,6 +46,17 @@ async function migrate() {
       replies JSONB DEFAULT '[]'::jsonb,
       created_at TIMESTAMP DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS games (
+      id SERIAL PRIMARY KEY,
+      round TEXT NOT NULL,
+      game_no INTEGER NOT NULL,
+      team1 TEXT,
+      team2 TEXT,
+      score1 INTEGER DEFAULT 0,
+      score2 INTEGER DEFAULT 0,
+      next_game_id INTEGER,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
   `);
 }
 await migrate();
@@ -112,20 +123,55 @@ app.patch('/api/shooting/:id', async (req,res)=>{
 app.get('/api/teams', async (req,res)=>{
   try{
     const { rows } = await pool.query(`SELECT id,name,team_group FROM players WHERE team=true ORDER BY id ASC`);
-    const A = [], B = [];
+    const groups = {};
     rows.forEach(p => {
-      if(p.team_group === 'A') A.push({id:p.id,name:p.name});
-      else if(p.team_group === 'B') B.push({id:p.id,name:p.name});
+      if(!groups[p.team_group]) groups[p.team_group] = [];
+      groups[p.team_group].push({id:p.id,name:p.name});
     });
-    ok(res, { A, B });
+    ok(res, groups);
   }catch(e){ console.error(e); bad(res,'Failed to load teams',500); }
 });
+
+// ✅ Balanced Auto Assign Teams
 app.post('/api/teams/auto', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    const { rows } = await pool.query(`SELECT id FROM players WHERE team=true ORDER BY id ASC`);
-    await Promise.all(rows.map((r,i)=> pool.query(`UPDATE players SET team_group=$1 WHERE id=$2`, [i%2===0?'A':'B', r.id])));
-    ok(res, { message: 'Teams auto-assigned' });
+
+    const { rows: plist } = await pool.query(
+      `SELECT id FROM players WHERE team=true ORDER BY id ASC`
+    );
+    const n = plist.length;
+    if(n < 2) return bad(res,'Need at least 2 team players');
+
+    let teamCount = 2;
+    const maxK = Math.min(26, n);
+    for(let k=maxK; k>=2; k--){
+      const base = Math.floor(n / k);
+      const rem  = n % k;
+      const maxSize = base + (rem > 0 ? 1 : 0);
+      const minSize = base;
+      if(minSize >= 3 && maxSize <= 5){
+        teamCount = k;
+        break;
+      }
+    }
+
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.slice(0, teamCount).split('');
+    const buckets = Array.from({length: teamCount}, ()=>[]);
+    plist.forEach((p, i)=> buckets[i % teamCount].push(p.id));
+
+    await pool.query(`UPDATE players SET team_group=NULL WHERE team=true`);
+    for(let i=0;i<buckets.length;i++){
+      const ids = buckets[i];
+      if(ids.length){
+        await pool.query(
+          `UPDATE players SET team_group=$1 WHERE id = ANY($2::int[])`,
+          [letters[i], ids]
+        );
+      }
+    }
+
+    ok(res,{ message:`Auto-assigned ${teamCount} team(s)`, teams:letters });
   }catch(e){ console.error(e); bad(res,'Auto-assign failed',500); }
 });
 
@@ -158,7 +204,7 @@ app.post('/api/messages/:id/react', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'React failed',500); }
 });
 
-// ✅ Replies with safe JSON parsing
+// Replies
 app.post('/api/messages/:id/reply', async (req,res)=>{
   try{
     const id = Number(req.params.id);
@@ -169,7 +215,6 @@ app.post('/api/messages/:id/reply', async (req,res)=>{
     if(!cur.rows.length) return notFound(res);
 
     let replies = cur.rows[0].replies;
-
     if (typeof replies === 'string') {
       try { replies = JSON.parse(replies) } catch { replies = [] }
     }
@@ -197,16 +242,16 @@ app.delete('/api/messages/:id', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Delete failed',500); }
 });
 
-// Admin Reset Data
+// Reset data
 app.post('/api/reset', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    await pool.query(`TRUNCATE tickets RESTART IDENTITY; TRUNCATE players RESTART IDENTITY; TRUNCATE messages RESTART IDENTITY;`);
+    await pool.query(`TRUNCATE tickets RESTART IDENTITY; TRUNCATE players RESTART IDENTITY; TRUNCATE messages RESTART IDENTITY; TRUNCATE games RESTART IDENTITY;`);
     ok(res, { message: 'All data cleared' });
   }catch(e){ console.error(e); bad(res,'Reset failed',500); }
 });
 
-// Admin Reset Schema
+// Reset schema
 app.get('/api/reset-schema', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
@@ -214,6 +259,7 @@ app.get('/api/reset-schema', async (req,res)=>{
       DROP TABLE IF EXISTS players CASCADE;
       DROP TABLE IF EXISTS tickets CASCADE;
       DROP TABLE IF EXISTS messages CASCADE;
+      DROP TABLE IF EXISTS games CASCADE;
     `);
     await migrate();
     res.json({ message: 'Schema reset complete' });
@@ -223,111 +269,99 @@ app.get('/api/reset-schema', async (req,res)=>{
   }
 });
 
-// --- Admin Delete/Update Endpoints (DB-backed) ---
+// --- Bracket helpers & routes ---
+async function getActiveTeamLetters(){
+  const { rows } = await pool.query(`
+    SELECT DISTINCT team_group AS tg
+    FROM players
+    WHERE team=true AND team_group IS NOT NULL
+    ORDER BY tg ASC
+  `);
+  return rows.map(r=>r.tg).filter(Boolean);
+}
 
-// Delete a shooter
-app.delete("/api/shooting/:id", async (req, res) => {
-  try {
-    if (!adminOK(req)) return bad(res, "Unauthorized", 401);
+app.get('/api/bracket', async (req,res)=>{
+  try{
+    const { rows } = await pool.query(`SELECT * FROM games ORDER BY round ASC, game_no ASC, id ASC`);
+    const byRound = rows.reduce((acc,g)=>{
+      (acc[g.round] = acc[g.round] || []).push(g);
+      return acc;
+    },{});
+    ok(res, byRound);
+  }catch(e){ console.error(e); bad(res,'Failed to load bracket',500); }
+});
+
+app.post('/api/bracket/generate', async (req,res)=>{
+  try{
+    if(!adminOK(req)) return bad(res,'Unauthorized',401);
+    const letters = await getActiveTeamLetters();
+    if(!(letters.length === 2 || letters.length === 4)){
+      return bad(res, 'Bracket generation supported only for 2 or 4 teams currently');
+    }
+
+    await pool.query(`DELETE FROM games`);
+
+    if(letters.length === 2){
+      const { rows } = await pool.query(
+        `INSERT INTO games(round, game_no, team1, team2) VALUES('final', 1, $1, $2) RETURNING *`,
+        [letters[0], letters[1]]
+      );
+      return ok(res, { message:'Final created', games: rows });
+    }
+
+    if(letters.length === 4){
+      const [A,B,C,D] = letters;
+      const semi1 = await pool.query(
+        `INSERT INTO games(round, game_no, team1, team2) VALUES('semi', 1, $1, $2) RETURNING *`,
+        [A, D]
+      );
+      const semi2 = await pool.query(
+        `INSERT INTO games(round, game_no, team1, team2) VALUES('semi', 2, $1, $2) RETURNING *`,
+        [B, C]
+      );
+      const final = await pool.query(
+        `INSERT INTO games(round, game_no) VALUES('final', 1) RETURNING *`
+      );
+      const finalId = final.rows[0].id;
+      await pool.query(`UPDATE games SET next_game_id=$1 WHERE id=$2`, [finalId, semi1.rows[0].id]);
+      await pool.query(`UPDATE games SET next_game_id=$1 WHERE id=$2`, [finalId, semi2.rows[0].id]);
+      return ok(res, { message:'Bracket created: 2 semis + final' });
+    }
+  }catch(e){ console.error(e); bad(res,'Bracket generation failed',500); }
+});
+
+app.patch('/api/games/:id', async (req,res)=>{
+  try{
+    if(!adminOK(req)) return bad(res,'Unauthorized',401);
     const id = Number(req.params.id);
-    const { rowCount } = await pool.query(
-      `DELETE FROM players WHERE id=$1 AND shooting=true`,
-      [id]
-    );
-    if (rowCount === 0) return notFound(res);
-    ok(res, { message: "Shooter deleted" });
-  } catch (e) {
-    console.error(e);
-    bad(res, "Delete failed", 500);
-  }
-});
-
-// Delete a player
-app.delete("/api/players/:id", async (req, res) => {
-  try {
-    if (!adminOK(req)) return bad(res, "Unauthorized", 401);
-    const id = Number(req.params.id);
-    const { rowCount } = await pool.query(`DELETE FROM players WHERE id=$1`, [id]);
-    if (rowCount === 0) return notFound(res);
-    ok(res, { message: "Player deleted" });
-  } catch (e) {
-    console.error(e);
-    bad(res, "Delete failed", 500);
-  }
-});
-
-// Update ticket quantity
-app.patch("/api/tickets/:id", async (req, res) => {
-  try {
-    if (!adminOK(req)) return bad(res, "Unauthorized", 401);
-    const id = Number(req.params.id);
-    const { quantity } = req.body || {};
-    const qty = Number(quantity);
-    if (!qty) return bad(res, "Quantity required");
+    const { score1=0, score2=0 } = req.body || {};
     const { rows } = await pool.query(
-      `UPDATE tickets SET quantity=$1 WHERE id=$2 RETURNING *`,
-      [qty, id]
+      `UPDATE games SET score1=$1, score2=$2 WHERE id=$3 RETURNING *`,
+      [Number(score1||0), Number(score2||0), id]
     );
-    if (!rows.length) return notFound(res);
-    ok(res, rows[0]);
-  } catch (e) {
-    console.error(e);
-    bad(res, "Update failed", 500);
-  }
+    if(!rows.length) return notFound(res);
+    const game = rows[0];
+
+    if(game.score1 != null && game.score2 != null && game.next_game_id){
+      const winner = game.score1 > game.score2 ? game.team1
+                    : game.score2 > game.score1 ? game.team2
+                    : null;
+      if(winner){
+        const nxt = await pool.query(`SELECT * FROM games WHERE id=$1`, [game.next_game_id]);
+        if(nxt.rows.length){
+          const ng = nxt.rows[0];
+          if(!ng.team1){
+            await pool.query(`UPDATE games SET team1=$1 WHERE id=$2`, [winner, ng.id]);
+          }else if(!ng.team2){
+            await pool.query(`UPDATE games SET team2=$1 WHERE id=$2`, [winner, ng.id]);
+          }
+        }
+      }
+    }
+
+    ok(res, game);
+  }catch(e){ console.error(e); bad(res,'Update score failed',500); }
 });
 
-// ✅ Remove a team member completely from teams
-app.delete("/api/teams/:team/:id", async (req, res) => {
-  try {
-    if (!adminOK(req)) return bad(res, "Unauthorized", 401);
-    const { id } = req.params;
-    await pool.query(
-      `UPDATE players SET team=false, team_group=NULL WHERE id=$1`,
-      [id]
-    );
-    ok(res, { message: "Team member removed" });
-  } catch (e) {
-    console.error(e);
-    bad(res, "Delete failed", 500);
-  }
-});
-
-// Add a new team member
-app.post("/api/teams/:team", async (req, res) => {
-  try {
-    if (!adminOK(req)) return bad(res, "Unauthorized", 401);
-    const { team } = req.params;
-    const { name } = req.body;
-    if (!name) return bad(res, "Name required");
-    const { rows } = await pool.query(
-      `INSERT INTO players(name,team,team_group) VALUES($1,true,$2) RETURNING id,name,team_group`,
-      [name, team]
-    );
-    ok(res, rows[0]);
-  } catch (e) {
-    console.error(e);
-    bad(res, "Add failed", 500);
-  }
-});
-
-// Rename a team member
-app.patch("/api/teams/:team/:id", async (req, res) => {
-  try {
-    if (!adminOK(req)) return bad(res, "Unauthorized", 401);
-    const { id } = req.params;
-    const { name } = req.body;
-    if (!name) return bad(res, "Name required");
-    const { rows } = await pool.query(
-      `UPDATE players SET name=$1 WHERE id=$2 RETURNING id,name,team_group`,
-      [name, id]
-    );
-    if (!rows.length) return notFound(res);
-    ok(res, rows[0]);
-  } catch (e) {
-    console.error(e);
-    bad(res, "Rename failed", 500);
-  }
-});
-
-// --- Start server ---
+// Start server
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
