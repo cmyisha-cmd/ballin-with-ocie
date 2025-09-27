@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './Bracket.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ballin-with-ocie.onrender.com';
 
@@ -21,48 +22,47 @@ export default function Bracket(){
   const final = data.final || [];
 
   return (
-    <section className="card" style={{margin:'28px 0'}}>
-      <h2>Bracket</h2>
+    <section className="card bracket-container" style={{margin:'28px 0'}}>
+      <h2>Tournament Bracket</h2>
 
-      {semi.length>0 && (
-        <>
-          <h3>Semifinals</h3>
-          <ul>
+      {semi.length === 2 && final.length === 1 && (
+        <div className="bracket">
+          <div className="round round-semis">
             {semi.map(g=>(
-              <li key={g.id}>
-                Game {g.game_no}: {g.team1 || 'TBD'} vs {g.team2 || 'TBD'}
-                {' '}— Score: {g.score1} : {g.score2}
-              </li>
+              <div className="match" key={g.id}>
+                <div className="team">{g.team1 || 'TBD'} <span>{g.score1}</span></div>
+                <div className="team">{g.team2 || 'TBD'} <span>{g.score2}</span></div>
+              </div>
             ))}
-          </ul>
-        </>
+          </div>
+          <div className="round round-final">
+            {final.map(g=>(
+              <div className="match" key={g.id}>
+                <div className="team">{g.team1 || 'TBD'} <span>{g.score1}</span></div>
+                <div className="team">{g.team2 || 'TBD'} <span>{g.score2}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {final.length>0 && (
-        <>
-          <h3>Final</h3>
-          <ul>
+      {semi.length === 0 && final.length === 1 && (
+        <div className="bracket">
+          <div className="round round-final">
             {final.map(g=>(
-              <li key={g.id}>
-                Final: {g.team1 || 'TBD'} vs {g.team2 || 'TBD'}
-                {' '}— Score: {g.score1} : {g.score2}
-              </li>
+              <div className="match" key={g.id}>
+                <div className="team">{g.team1 || 'TBD'} <span>{g.score1}</span></div>
+                <div className="team">{g.team2 || 'TBD'} <span>{g.score2}</span></div>
+              </div>
             ))}
-          </ul>
+          </div>
+        </div>
+      )}
 
-          {(() => {
-            const g = final[0];
-            if(g.score1 != null && g.score2 != null && g.score1 !== g.score2){
-              const champion = g.score1 > g.score2 ? g.team1 : g.team2;
-              return (
-                <div style={{marginTop:12, fontWeight:'bold', fontSize:'1.2em', color:'purple'}}>
-                  🏆 Champion: Team {champion}
-                </div>
-              );
-            }
-            return null;
-          })()}
-        </>
+      {final.length === 1 && final[0].score1 !== final[0].score2 && (
+        <div className="champion" style={{marginTop:20, fontWeight:'bold', fontSize:'1.5em', color:'purple'}}>
+          🏆 Champion: {final[0].score1 > final[0].score2 ? final[0].team1 : final[0].team2}
+        </div>
       )}
 
       {semi.length===0 && final.length===0 && (

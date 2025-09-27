@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Register from './pages/Register'
@@ -6,98 +6,32 @@ import Tickets from './pages/Tickets'
 import BirthdayWall from './pages/BirthdayWall'
 import Admin from './pages/Admin'
 import Leaderboard from './pages/Leaderboard'
+import Bracket from './pages/Bracket'
 
 export default function App(){
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  // ✅ Ticker messages
-  const tickerMessages = [
-    "P.B. Edwards Jr. Gymnasium • Saturday, Sept 27, 2025 • 2:00 PM",
-    "Doors open at 2:00 PM — Arrive early!",
-    "Register now for the Shooting Contest 🏀",
-    "Happy 13th Birthday Ocie! 🎉"
-  ];
-
-  // ✅ Dynamic ticker speed
-  const tickerRef = useRef(null);
-  const [duration, setDuration] = useState(15); // default fallback
-
-  useEffect(() => {
-    if (tickerRef.current) {
-      const width = tickerRef.current.scrollWidth;
-      // adjust speed based on total content width (more text → longer duration)
-      const speed = Math.max(10, width / 100); // 100px per second
-      setDuration(speed);
-    }
-  }, [tickerMessages]);
-
   return (
     <>
       <header className="site-header">
-        <div className="wrap bar header-inner">
-
-          {/* ✅ Logo on the left */}
-          <div className="brand">
-            <Link to="/" onClick={()=>setMenuOpen(false)}>
-              <img 
-                src="/ocie-logo.png" 
-                alt="Ballin' With Ocie: 13th Edition" 
-                style={{height:'60px', width:'auto'}}
-              />
-            </Link>
-          </div>
-
-          {/* Hamburger (mobile) */}
-          <button 
-            className="menu-toggle" 
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            ☰
-          </button>
-
-          {/* Nav links */}
-          <nav className={menuOpen ? 'open' : ''}>
-            <Link to="/" onClick={()=>setMenuOpen(false)}>Home</Link>
-            <Link to="/register" onClick={()=>setMenuOpen(false)}>Register</Link>
-            <Link to="/tickets" onClick={()=>setMenuOpen(false)}>Get Tickets</Link>
-            <Link to="/birthday" onClick={()=>setMenuOpen(false)}>Birthday Wall</Link>
-            <Link to="/leaderboard" onClick={()=>setMenuOpen(false)}>Leaderboard</Link>
-            <Link to="/admin" onClick={()=>setMenuOpen(false)}>Admin</Link>
-          </nav>
-        </div>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/register">Register</Link>
+          <Link to="/tickets">Tickets</Link>
+          <Link to="/birthdaywall">Birthday Wall</Link>
+          <Link to="/leaderboard">Leaderboard</Link>
+          <Link to="/admin">Admin</Link>
+          <Link to="/bracket">Bracket</Link>
+        </nav>
       </header>
 
-      {/* Mobile overlay */}
-      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
-
-      <main className="wrap">
-        <Routes>
-          <Route path="/" element={<Home/>} />
-          <Route path="/register" element={<Register/>} />
-          <Route path="/tickets" element={<Tickets/>} />
-          <Route path="/birthday" element={<BirthdayWall/>} />
-          <Route path="/leaderboard" element={<Leaderboard/>} />
-          <Route path="/admin" element={<Admin/>} />
-        </Routes>
-      </main>
-
-      {/* ✅ ESPN-style ticker footer with dynamic speed */}
-      <footer>
-        <div className="ticker">
-          <div 
-            className="ticker__wrap" 
-            ref={tickerRef}
-            style={{ animationDuration: `${duration}s` }}
-          >
-            {tickerMessages.map((msg, i) => (
-              <div key={i} className="ticker__item">
-                🏀 {msg}
-              </div>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/register" element={<Register/>} />
+        <Route path="/tickets" element={<Tickets/>} />
+        <Route path="/birthdaywall" element={<BirthdayWall/>} />
+        <Route path="/admin" element={<Admin/>} />
+        <Route path="/leaderboard" element={<Leaderboard/>} />
+        <Route path="/bracket" element={<Bracket/>} />
+      </Routes>
     </>
   )
 }
