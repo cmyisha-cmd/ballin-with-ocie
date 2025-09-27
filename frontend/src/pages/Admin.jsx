@@ -43,6 +43,14 @@ export default function Admin(){
     loadAll();
   }
 
+  async function resetTeams(){
+    await fetch(`${API_URL}/api/teams/reset`,{
+      method:'POST',
+      headers:{ 'x-admin-pass':'ocie2025' }
+    });
+    loadAll();
+  }
+
   async function resetData(){
     if(!confirm('This will clear all data. Continue?')) return;
     await fetch(`${API_URL}/api/reset`,{
@@ -129,7 +137,10 @@ export default function Admin(){
       {/* Teams */}
       <div className="card">
         <h3 style={{marginTop:0}}>Teams</h3>
-        <div className="cta"><button className="btn" onClick={autoTeams}>Auto-Assign Teams</button></div>
+        <div className="cta">
+          <button className="btn" onClick={autoTeams}>Auto-Assign Teams</button>
+          <button className="btn danger" onClick={resetTeams}>Reset Teams</button>
+        </div>
         <div className="grid" style={{marginTop:10}}>
           {Object.keys(teams).map(g=>(
             <div key={g}>
