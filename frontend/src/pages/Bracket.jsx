@@ -1,1 +1,1 @@
-// Bracket.jsx page code
+// Full Bracket.jsx visualization code

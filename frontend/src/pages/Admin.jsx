@@ -1,1 +1,1 @@
-// full Admin.jsx with bracket management
+// Full Admin.jsx code with bracket management and score inputs
