@@ -225,7 +225,7 @@ app.get('/api/reset-schema', async (req,res)=>{
 
 // --- Admin Delete/Update Endpoints (DB-backed) ---
 
-// Delete a shooter (player flagged as shooting)
+// Delete a shooter
 app.delete("/api/shooting/:id", async (req, res) => {
   try {
     if (!adminOK(req)) return bad(res, "Unauthorized", 401);
@@ -276,14 +276,14 @@ app.patch("/api/tickets/:id", async (req, res) => {
   }
 });
 
-// Delete a team member
+// ✅ Remove a team member completely from teams
 app.delete("/api/teams/:team/:id", async (req, res) => {
   try {
     if (!adminOK(req)) return bad(res, "Unauthorized", 401);
-    const { team, id } = req.params;
+    const { id } = req.params;
     await pool.query(
-      `UPDATE players SET team_group=NULL WHERE id=$1 AND team_group=$2`,
-      [id, team]
+      `UPDATE players SET team=false, team_group=NULL WHERE id=$1`,
+      [id]
     );
     ok(res, { message: "Team member removed" });
   } catch (e) {
