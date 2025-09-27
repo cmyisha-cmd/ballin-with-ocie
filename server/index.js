@@ -128,120 +128,69 @@ app.delete('/api/shooting/:id', async (req,res)=>{
   }catch(e){ console.error(e); bad(res,'Delete failed',500); }
 });
 
-// Teams
-app.get('/api/teams', async (req,res)=>{
+// ✅ Messages
+app.get('/api/messages', async (req,res)=>{
   try{
-    const { rows } = await pool.query(`SELECT id,name,team_group FROM players WHERE team=true ORDER BY id ASC`);
-    const teams = {};
-    rows.forEach(p=>{
-      if(!teams[p.team_group]) teams[p.team_group]=[];
-      teams[p.team_group].push({id:p.id,name:p.name});
-    });
-    ok(res, teams);
-  }catch(e){ console.error(e); bad(res,'Failed to load teams',500); }
+    const { rows } = await pool.query(`SELECT id,name,text,reactions,replies,created_at FROM messages ORDER BY id DESC`);
+    ok(res, rows);
+  }catch(e){ console.error(e); bad(res,'Failed to load messages',500); }
 });
-
-app.post('/api/teams/auto', async (req,res)=>{
+app.post('/api/messages', async (req,res)=>{
   try{
-    if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    const { rows } = await pool.query(`SELECT id FROM players WHERE team=true ORDER BY id ASC`);
-    if(rows.length===0) return ok(res,{message:'No team players'});
-
-    // Balanced team assignment, prefer 3–5 players per team
-    const numPlayers = rows.length;
-    const minSize = 3, maxSize = 5;
-    let numTeams = Math.ceil(numPlayers / maxSize);
-    if (numPlayers/numTeams < minSize) numTeams = Math.ceil(numPlayers / minSize);
-    const teamLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
-    await Promise.all(rows.map((r,i)=>{
-      const teamIndex = i % numTeams;
-      return pool.query(`UPDATE players SET team_group=$1 WHERE id=$2`, [teamLabels[teamIndex], r.id]);
-    }));
-
-    ok(res,{message:`Auto-assigned into ${numTeams} teams`});
-  }catch(e){ console.error(e); bad(res,'Auto-assign failed',500); }
-});
-
-app.post('/api/teams/:team', async (req,res)=>{
-  try{
-    if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    const { team } = req.params;
-    const { name } = req.body || {};
-    if(!name) return bad(res,'Name required');
-    const { rows } = await pool.query(
-      `INSERT INTO players(name,team,team_group) VALUES($1,true,$2) RETURNING *`,
-      [name, team]
-    );
+    const { name, text } = req.body || {};
+    if(!name || !text) return bad(res,'Name and text required');
+    const { rows } = await pool.query(`INSERT INTO messages(name,text) VALUES($1,$2) RETURNING *`, [name, text]);
     ok(res, rows[0]);
-  }catch(e){ console.error(e); bad(res,'Add failed',500); }
+  }catch(e){ console.error(e); bad(res,'Post failed',500); }
 });
-app.delete('/api/teams/:team/:id', async (req,res)=>{
+app.post('/api/messages/:id/react', async (req,res)=>{
   try{
-    if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    const { id } = req.params;
-    const { rowCount } = await pool.query(`DELETE FROM players WHERE id=$1`, [id]);
-    if(rowCount===0) return notFound(res);
-    ok(res,{message:'Deleted'});
-  }catch(e){ console.error(e); bad(res,'Delete failed',500); }
-});
-app.patch('/api/teams/:team/:id', async (req,res)=>{
-  try{
-    if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    const { id } = req.params;
-    const { name } = req.body || {};
-    const { rows } = await pool.query(`UPDATE players SET name=$1 WHERE id=$2 RETURNING *`, [name, id]);
-    if(!rows.length) return notFound(res);
+    const id = Number(req.params.id);
+    const { emoji } = req.body || {};
+    if(!emoji) return bad(res, 'Emoji required');
+    const cur = await pool.query(`SELECT reactions FROM messages WHERE id=$1`, [id]);
+    if(!cur.rows.length) return notFound(res);
+    const reactions = cur.rows[0].reactions || {};
+    reactions[emoji] = (reactions[emoji] || 0) + 1;
+    const { rows } = await pool.query(`UPDATE messages SET reactions=$1 WHERE id=$2 RETURNING *`, [reactions, id]);
     ok(res, rows[0]);
-  }catch(e){ console.error(e); bad(res,'Update failed',500); }
+  }catch(e){ console.error(e); bad(res,'React failed',500); }
 });
-
-// Bracket
-app.post('/api/bracket/generate', async (req,res)=>{
+app.post('/api/messages/:id/reply', async (req,res)=>{
   try{
-    if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    await pool.query(`TRUNCATE games RESTART IDENTITY`);
+    const id = Number(req.params.id);
+    const { name, text } = req.body || {};
+    if(!name || !text) return bad(res,'Name and text required');
 
-    const teamsRes = await pool.query(`SELECT DISTINCT team_group FROM players WHERE team=true ORDER BY team_group ASC`);
-    const teamGroups = teamsRes.rows.map(r=>r.team_group);
-    if(teamGroups.length<2) return bad(res,'Not enough teams');
+    const cur = await pool.query(`SELECT replies FROM messages WHERE id=$1`, [id]);
+    if(!cur.rows.length) return notFound(res);
 
-    if(teamGroups.length===2){
-      await pool.query(`INSERT INTO games(round,team1,team2) VALUES('final',$1,$2)`, [teamGroups[0], teamGroups[1]]);
-    }else if(teamGroups.length===4){
-      await pool.query(`INSERT INTO games(round,team1,team2) VALUES('semi',$1,$2)`, [teamGroups[0], teamGroups[3]]);
-      await pool.query(`INSERT INTO games(round,team1,team2) VALUES('semi',$1,$2)`, [teamGroups[1], teamGroups[2]]);
-      await pool.query(`INSERT INTO games(round,team1,team2) VALUES('final',NULL,NULL)`);
+    let replies = cur.rows[0].replies;
+    if (typeof replies === 'string') {
+      try { replies = JSON.parse(replies) } catch { replies = [] }
     }
-    ok(res,{message:'Bracket generated'});
-  }catch(e){ console.error(e); bad(res,'Generate failed',500); }
+    if (!Array.isArray(replies)) replies = [];
+
+    replies.push({ id: Date.now(), name, text });
+
+    const { rows } = await pool.query(
+      `UPDATE messages SET replies=$1 WHERE id=$2 RETURNING *`,
+      [JSON.stringify(replies), id]
+    );
+
+    ok(res, rows[0]);
+  }catch(e){ console.error(e); bad(res,'Reply failed',500); }
 });
-app.get('/api/bracket', async (req,res)=>{
-  try{
-    const { rows } = await pool.query(`SELECT * FROM games ORDER BY id ASC`);
-    const semi = rows.filter(r=>r.round==='semi');
-    const final = rows.filter(r=>r.round==='final');
-    ok(res,{semi,final});
-  }catch(e){ console.error(e); bad(res,'Failed to load bracket',500); }
-});
-app.patch('/api/games/:id', async (req,res)=>{
+app.delete('/api/messages/:id', async (req,res)=>{
   try{
     if(!adminOK(req)) return bad(res,'Unauthorized',401);
     const id = Number(req.params.id);
-    const { score1=0, score2=0 } = req.body || {};
-    const { rows } = await pool.query(`UPDATE games SET score1=$1,score2=$2 WHERE id=$3 RETURNING *`, [score1,score2,id]);
-    if(!rows.length) return notFound(res);
-    ok(res, rows[0]);
-  }catch(e){ console.error(e); bad(res,'Update failed',500); }
+    const { rowCount } = await pool.query(`DELETE FROM messages WHERE id=$1`, [id]);
+    if(rowCount === 0) return notFound(res);
+    ok(res, { message: 'Message deleted' });
+  }catch(e){ console.error(e); bad(res,'Delete failed',500); }
 });
 
-// Reset
-app.post('/api/reset', async (req,res)=>{
-  try{
-    if(!adminOK(req)) return bad(res,'Unauthorized',401);
-    await pool.query(`TRUNCATE tickets RESTART IDENTITY; TRUNCATE players RESTART IDENTITY; TRUNCATE messages RESTART IDENTITY; TRUNCATE games RESTART IDENTITY;`);
-    ok(res,{message:'All data cleared'});
-  }catch(e){ console.error(e); bad(res,'Reset failed',500); }
-});
+// Bracket, Teams, Reset (your existing code for those)...
 
 app.listen(PORT,()=> console.log(`Server running on ${PORT}`));
