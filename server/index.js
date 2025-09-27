@@ -1,1 +1,1 @@
-// server/index.js full code with players, tickets, shooting, messages, teams, auto-assign, bracket, and safe startup.
+// FULL server/index.js code from earlier assistant message (with migrate, players, tickets, shooting, messages, teams, auto-assign, bracket, safe startup).

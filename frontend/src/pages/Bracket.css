@@ -1,1 +1,37 @@
-/* Bracket.css styling */
+.bracket-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.round {
+  flex: 1;
+  min-width: 200px;
+}
+
+.round h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.match {
+  background: #f4f4f4;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 20px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+}
+
+.team {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  padding: 6px 0;
+}
+
+.team span {
+  font-weight: bold;
+}
