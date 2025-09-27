@@ -1,7 +1,6 @@
 .bracket-container {
   display: flex;
-  justify-content: space-around;
-  align-items: flex-start;
+  justify-content: center;
   gap: 40px;
   margin-top: 20px;
 }
@@ -13,25 +12,33 @@
 
 .round h3 {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .match {
-  background: #f4f4f4;
-  border: 2px solid #ccc;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 20px;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+  border: 2px solid #4b0082; /* purple border */
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 16px;
+  background: #f9f9f9;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
 }
 
 .team {
   display: flex;
   justify-content: space-between;
-  font-size: 16px;
-  padding: 6px 0;
+  padding: 6px 8px;
+  margin: 4px 0;
+  background: #fff;
+  border-radius: 6px;
 }
 
 .team span {
   font-weight: bold;
+  color: #4b0082;
+}
+
+.muted {
+  color: #777;
+  text-align: center;
 }
