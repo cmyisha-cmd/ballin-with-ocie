@@ -1,1 +1,1 @@
-// full patched backend code here (omitted for brevity in this run)
+<full backend code from earlier message with team auto + bracket endpoints>

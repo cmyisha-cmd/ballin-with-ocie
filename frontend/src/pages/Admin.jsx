@@ -1,1 +1,1 @@
-// patched Admin.jsx code here
+<full Admin.jsx with dynamic teams and bracket management as per earlier patch>
